@@ -1,4 +1,4 @@
-// "Compila" el proyecto: verifica la sintaxis de cada archivo .js de src/.
+
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
