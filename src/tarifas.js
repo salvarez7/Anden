@@ -1,4 +1,9 @@
-
+/**
+ * Módulo de Cálculo de Aproximación de Tarifas — Andén
+ * Historia 12 · RF-31 (cálculo) y RF-32 (aviso de estimación)
+ * Funciona en el navegador (window.Tarifas) y en Node (require).
+ * Los valores de referencia viven en datos.js.
+ */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require('./datos'));
   else root.Tarifas = factory(root.TarifasDatos);
@@ -6,6 +11,10 @@
   'use strict';
 
   const { TARIFAS, PASAJEROS_INCLUIDOS, RECARGO_PASAJERO_DIA, MARGEN } = datos;
+
+  const AVISO_ESTIMACION =
+    'Este valor es solo una estimación. El precio final se define al concluir el viaje. ' +
+    'Si los trayectos resultan más largos de lo indicado, el ajuste se acuerda directamente con el conductor.';
 
   const redondearMil = (n) => Math.round(n / 1000) * 1000;
 
@@ -37,8 +46,12 @@
       minimo: redondearMil(estimado * (1 - MARGEN)),
       maximo: redondearMil(estimado * (1 + MARGEN)),
       desglose: { base, porTrayectos, extra },
+      aviso: AVISO_ESTIMACION,
     };
   }
 
-  return { TARIFAS, validar, calcularEstimado };
+  const formatoCOP = (n) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
+
+  return { TARIFAS, AVISO_ESTIMACION, calcularEstimado, formatoCOP };
 });
