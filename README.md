@@ -23,8 +23,8 @@ con: npm test (para correr las pruebas)
 GitHub ejecuta el pipeline en cada push y pull request. El estado actual se ve en el badge de arriba.
  
 ## Equipo y roles
-Sofia (Base del proyecto, pipeline de CI y README) -  `ci/pipeline-inicial`
-Santiago (Lógica de estimación datos y cálculo) - `feat/h12-logica`
+Santiago (Base del proyecto, pipeline de CI y README) -  `ci/pipeline-inicial`
+Sofia (Lógica de estimación datos y cálculo) - `feat/h12-logica`
 Nikol ( Pruebas automatizadas y pantalla) - `pruebas/vista`
  
 ## Uso de IA
