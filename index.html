@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Andén · Estimar tarifa</title>
+<style>
+:root{--primario:#132D46;--accion:#01C38E;--fondo:#FFFFFF;--texto:#1A1E29;--borde:#d5dbe2}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--texto);background:var(--fondo);line-height:1.5}
+header{background:var(--primario);color:#fff;padding:1.25rem 1rem}
+header h1{margin:0 auto;max-width:960px;font-size:1.4rem}
+main{max-width:960px;margin:0 auto;padding:1.5rem 1rem;display:grid;gap:1.5rem;grid-template-columns:1fr}
+@media(min-width:768px){main{grid-template-columns:1fr 1fr}}
+h2{margin:0 0 1rem;font-size:1.15rem;color:var(--primario)}
+label{display:block;font-weight:600;margin-bottom:.25rem}
+.campo{margin-bottom:1rem}
+input,select{width:100%;padding:.65rem;border:1px solid var(--borde);border-radius:6px;font:inherit;color:var(--texto);background:#fff}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accion);outline-offset:2px}
+button{width:100%;padding:.8rem;border:0;border-radius:6px;background:var(--accion);color:var(--primario);font:inherit;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(.95)}
+.resultado{background:var(--primario);color:#fff;border-radius:10px;padding:1.25rem;min-height:12rem}
+.resultado .vacio{opacity:.8}
+.monto{font-size:2rem;font-weight:700;color:var(--accion);margin:.25rem 0}
+.rango,.desglose{margin:.25rem 0;font-size:.95rem}
+.aviso{margin-top:1rem;padding:.75rem;border-left:4px solid var(--accion);background:rgba(255,255,255,.08);font-size:.9rem}
+.error{color:#fff;background:#8a2b2b;padding:.75rem;border-radius:6px;margin:0;padding-left:1.75rem}
+</style>
+</head>
+<body>
+<header><h1>Andén · Estima el costo de tu servicio</h1></header>
+<main>
+  <section aria-labelledby="t-datos">
+    <h2 id="t-datos">Datos de tu reserva</h2>
+    <div class="campo"><label for="dias">Días de servicio</label><input id="dias" type="number" min="1" step="1" value="3"></div>
+    <div class="campo"><label for="gama">Gama del vehículo</label>
+      <select id="gama">
+        <option value="economica">Económica (hasta 4 pasajeros)</option>
+        <option value="estandar" selected>Estándar (hasta 6 pasajeros)</option>
+        <option value="premium">Premium (hasta 8 pasajeros)</option>
+      </select></div>
+    <div class="campo"><label for="pasajeros">Número de pasajeros</label><input id="pasajeros" type="number" min="1" step="1" value="2"></div>
+    <div class="campo"><label for="trayectos">Trayectos aproximados</label><input id="trayectos" type="number" min="0" step="1" value="6"></div>
+    <button id="calcular" type="button">Calcular estimado</button>
+  </section>
+  <section aria-labelledby="t-res">
+    <h2 id="t-res">Costo estimado</h2>
+    <div id="resultado" class="resultado" aria-live="polite"><p class="vacio">Completa los datos y calcula tu estimado.</p></div>
+  </section>
+</main>
+<script src="src/datos.js"></script>
+<script src="src/tarifas.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var out = $('resultado');
+  var CLAVE = 'anden:ultima-estimacion';
+  var CAMPOS = ['dias', 'gama', 'pasajeros', 'trayectos'];
+  try { var g = JSON.parse(localStorage.getItem(CLAVE)); if (g) CAMPOS.forEach(function (k) { if (g[k] !== undefined) $(k).value = g[k]; }); } catch (e) {}
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  $('calcular').addEventListener('click', function () {
+    var r = Tarifas.calcularEstimado({
+      dias: parseInt($('dias').value, 10),
+      gama: $('gama').value,
+      pasajeros: parseInt($('pasajeros').value, 10),
+      trayectos: parseInt($('trayectos').value, 10)
+    });
+    if (!r.ok) {
+      out.innerHTML = '<ul class="error">' + r.errores.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
+      return;
+    }
+    try { var s = {}; CAMPOS.forEach(function (k) { s[k] = $(k).value; }); localStorage.setItem(CLAVE, JSON.stringify(s)); } catch (e) {}
+    var f = Tarifas.formatoCOP;
+    out.innerHTML =
+      '<div>Estimado aproximado</div>' +
+      '<div class="monto">≈ ' + f(r.estimado) + '</div>' +
+      '<p class="rango">Rango probable: ' + f(r.minimo) + ' – ' + f(r.maximo) + '</p>' +
+      '<p class="desglose">Días: ' + f(r.desglose.base) + ' · Trayectos: ' + f(r.desglose.porTrayectos) +
+      (r.desglose.extra ? ' · Pasajeros extra: ' + f(r.desglose.extra) : '') + '</p>' +
+      '<p class="aviso">' + esc(r.aviso) + '</p>';
+  });
+})();
+</script>
+</body>
+</html>
