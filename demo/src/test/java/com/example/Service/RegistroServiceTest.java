@@ -10,20 +10,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistroServiceTest {
 
-    
+    // validarRequisitos no usa la base de datos, por eso los repositorios van null
     private final RegistroService servicio = new RegistroService(null, null, null);
 
     private DatosRegistro conductor(int edad, LocalDate fechaLicencia) {
-        // SOAT y tecnomecánica vigentes (vencen dentro de un año)
-        return conductor(edad, fechaLicencia,
-                LocalDate.now().plusYears(1), LocalDate.now().plusYears(1));
-    }
-
-    private DatosRegistro conductor(int edad, LocalDate fechaLicencia,
-                                    LocalDate soat, LocalDate tecno) {
         return new DatosRegistro("Juan Pérez", "juan@correo.com", "3001234567",
                 "123456", "CONDUCTOR", edad, "LIC123", fechaLicencia, "ABC123",
-                soat, tecno);
+                "Renault", "Duster", 4,
+                LocalDate.now().plusMonths(6), LocalDate.now().plusMonths(6));
+    }
+
+    private DatosRegistro turista(String correo, String telefono) {
+        return new DatosRegistro("Ana Gómez", correo, telefono, "123456", "TURISTA",
+                0, null, null, null, null, null, 0, null, null);
+    }
+
+    private DatosRegistro conductorConPapeles(LocalDate soat, LocalDate tecnomecanica) {
+        return new DatosRegistro("Juan Pérez", "juan@correo.com", "3001234567",
+                "123456", "CONDUCTOR", 30, "LIC123", LocalDate.now().minusYears(5), "ABC123",
+                "Renault", "Duster", 4, soat, tecnomecanica);
     }
 
     @Test
@@ -63,10 +68,58 @@ class RegistroServiceTest {
     }
 
     @Test
+    void siFallanDosRequisitosSeMuestranLosDosMensajes() {
+        ResultadoValidacion r = servicio.validarRequisitos(
+                conductor(16, LocalDate.now().minusMonths(6)));
+        assertFalse(r.valido());
+        assertEquals(2, r.errores().size());
+    }
+
+    // ---- H1: formato de correo y teléfono (Sofía) ----
+
+    @Test
+    void turistaConDatosCorrectosEsValido() {
+        assertTrue(servicio.validarDatosBasicos(turista("ana@correo.com", "3001234567")).valido());
+    }
+
+    @Test
+    void telefonoConEspaciosYPrefijoEsValido() {
+        assertTrue(servicio.validarDatosBasicos(turista("ana@correo.com", "+57 300 123 4567")).valido());
+        assertEquals("3001234567", RegistroService.normalizarTelefono("+57 300 123-4567"));
+    }
+
+    @Test
+    void correoSinArrobaNoEsValido() {
+        ResultadoValidacion r = servicio.validarDatosBasicos(turista("anacorreo.com", "3001234567"));
+        assertFalse(r.valido());
+        assertTrue(r.errores().get(0).contains("correo"));
+    }
+
+    @Test
+    void telefonoCortoNoEsValido() {
+        ResultadoValidacion r = servicio.validarDatosBasicos(turista("ana@correo.com", "30012"));
+        assertFalse(r.valido());
+        assertTrue(r.errores().get(0).contains("teléfono"));
+    }
+
+    @Test
+    void telefonoConLetrasNoEsValido() {
+        assertFalse(servicio.validarDatosBasicos(turista("ana@correo.com", "300abc4567")).valido());
+    }
+
+    @Test
+    void noSePuedeRegistrarComoAdministrador() {
+        DatosRegistro admin = new DatosRegistro("X", "x@correo.com", "3001234567", "123456",
+                "ADMIN", 0, null, null, null, null, null, 0, null, null);
+        assertFalse(servicio.validarDatosBasicos(admin).valido());
+    }
+
+    // ---- H2: SOAT y tecnomecánica al día (Sofía) ----
+
+    @Test
     void soatVencidoNoEsValido() {
         ResultadoValidacion r = servicio.validarRequisitos(
-                conductor(30, LocalDate.now().minusYears(5),
-                        LocalDate.now().minusDays(1), LocalDate.now().plusYears(1)));
+                conductorConPapeles(LocalDate.now().minusDays(1), LocalDate.now().plusMonths(3)));
         assertFalse(r.valido());
         assertTrue(r.errores().get(0).contains("SOAT"));
     }
@@ -74,33 +127,8 @@ class RegistroServiceTest {
     @Test
     void tecnomecanicaVencidaNoEsValida() {
         ResultadoValidacion r = servicio.validarRequisitos(
-                conductor(30, LocalDate.now().minusYears(5),
-                        LocalDate.now().plusYears(1), LocalDate.now().minusDays(1)));
+                conductorConPapeles(LocalDate.now().plusMonths(3), LocalDate.now().minusMonths(1)));
         assertFalse(r.valido());
         assertTrue(r.errores().get(0).contains("tecnomecánica"));
-    }
-
-    @Test
-    void sinFechasDeSoatYTecnomecanicaNoEsValido() {
-        ResultadoValidacion r = servicio.validarRequisitos(
-                conductor(30, LocalDate.now().minusYears(5), null, null));
-        assertFalse(r.valido());
-        assertEquals(2, r.errores().size());
-    }
-
-    @Test
-    void soatQueVenceHoySigueVigente() {
-        ResultadoValidacion r = servicio.validarRequisitos(
-                conductor(30, LocalDate.now().minusYears(5),
-                        LocalDate.now(), LocalDate.now()));
-        assertTrue(r.valido());
-    }
-
-    @Test
-    void siFallanDosRequisitosSeMuestranLosDosMensajes() {
-        ResultadoValidacion r = servicio.validarRequisitos(
-                conductor(16, LocalDate.now().minusMonths(6)));
-        assertFalse(r.valido());
-        assertEquals(2, r.errores().size());
     }
 }

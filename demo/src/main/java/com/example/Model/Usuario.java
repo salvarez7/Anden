@@ -1,5 +1,3 @@
-
-
 package com.example.Model;
 
 import org.springframework.data.annotation.Id;
@@ -13,6 +11,7 @@ public class Usuario {
 
     private String nombre;
     private String correo;
+    private String telefono;
     private String password;
     private String tipoUsuario;
 
@@ -27,6 +26,13 @@ public class Usuario {
         this.tipoUsuario = tipoUsuario;
     }
 
+    // Perfil del turista: además de los datos del login guarda su teléfono
+    public Usuario(String nombre, String correo, String telefono,
+                   String password, String tipoUsuario) {
+        this(nombre, correo, password, tipoUsuario);
+        this.telefono = telefono;
+    }
+
     public String getId() {
         return id;
     }
@@ -37,6 +43,10 @@ public class Usuario {
 
     public String getCorreo() {
         return correo;
+    }
+
+    public String getTelefono() {
+        return telefono;
     }
 
     public String getPassword() {
@@ -57,6 +67,10 @@ public class Usuario {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public void setPassword(String password) {

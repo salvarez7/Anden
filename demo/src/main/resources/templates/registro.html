@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f4f1ec;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;margin:0;padding:32px 16px;box-sizing:border-box;color:#1A1E29}
+    .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:640px;box-sizing:border-box}
+    h1{margin-top:0;font-size:1.4rem}
+    h2{font-size:1rem;margin:24px 0 0;color:#132D46}
+    label{display:block;margin:14px 0 4px;font-size:.9rem}
+    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit}
+    button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
+    .msg{padding:10px;border-radius:8px;margin-bottom:12px;font-size:.9rem}
+    .error{background:#fde8e8;color:#9b1c1c}
+    .error ul{margin:0;padding-left:18px}
+    p.link{text-align:center;font-size:.9rem}
+    .pestanas{display:flex;gap:8px;margin-bottom:16px}
+    .pestanas a{flex:1;text-align:center;padding:10px;border-radius:8px;background:#ffffff;color:#132D46;text-decoration:none;font-weight:600}
+    .pestanas a.activa{background:#132D46;color:#ffffff}
+    .requisitos{background:#ffffff;border-radius:8px;padding:12px 16px;font-size:.9rem}
+    .requisitos ul{margin:6px 0 0;padding-left:18px}
+    .fila{display:grid;grid-template-columns:1fr;gap:0 16px}
+    @media(min-width:600px){.fila{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 th:text="${formulario.esConductor()} ? 'Maneja con Andén' : 'Crea tu cuenta de turista'">Crear cuenta</h1>
+
+    <!-- Pestañas para cambiar entre registro de turista y de conductor -->
+    <div class="pestanas">
+      <a th:href="@{/registro(tipo='TURISTA')}" th:classappend="${!formulario.esConductor()} ? 'activa'">Soy turista</a>
+      <a th:href="@{/registro(tipo='CONDUCTOR')}" th:classappend="${formulario.esConductor()} ? 'activa'">Quiero ser conductor</a>
+    </div>
+
+    <!-- Mensajes de error que manda RegistroController -->
+    <div class="msg error" th:if="${errores}">
+      <ul>
+        <li th:each="e : ${errores}" th:text="${e}">Error</li>
+      </ul>
+    </div>
+
+    <div class="requisitos" th:if="${formulario.esConductor()}">
+      <strong>Antes de postularte, verifica que cumples con estos requisitos:</strong>
+      <ul>
+        <li>Licencia de conducción vigente, expedida o renovada hace mínimo 2 años</li>
+        <li>Sin antecedentes en Secretaría de Movilidad (últimos 4 meses)</li>
+        <li>Sin antecedentes legales</li>
+        <li>Mayor de edad</li>
+        <li>Vehículo en buen estado, con tecnomecánica y SOAT al día</li>
+      </ul>
+    </div>
+
+    <!-- th:object une el formulario con FormularioRegistro; th:field llena name, id y value -->
+    <form th:action="@{/registro}" th:object="${formulario}" method="post">
+      <input type="hidden" th:field="*{tipoUsuario}">
+
+      <h2>Datos personales</h2>
+      <div class="fila">
+        <div>
+          <label for="nombre">Nombre completo</label>
+          <input type="text" th:field="*{nombre}" placeholder="Escribe tu nombre" required>
+        </div>
+        <div>
+          <label for="telefono">Teléfono / WhatsApp</label>
+          <input type="tel" th:field="*{telefono}" placeholder="Ej. 300 123 4567" required>
+        </div>
+        <div>
+          <label for="correo">Correo</label>
+          <input type="email" th:field="*{correo}" placeholder="nombre@correo.com" required>
+        </div>
+        <div>
+          <label for="password">Contraseña</label>
+          <input type="password" th:field="*{password}" minlength="6" required>
+        </div>
+      </div>
+
+      <!-- Esta parte solo aparece en el registro de conductor -->
+      <th:block th:if="${formulario.esConductor()}">
+        <div class="fila">
+          <div>
+            <label for="edad">Edad</label>
+            <input type="number" th:field="*{edad}" min="0" required>
+          </div>
+        </div>
+
+        <h2>Licencia de conducción</h2>
+        <div class="fila">
+          <div>
+            <label for="numeroLicencia">Número de licencia</label>
+            <input type="text" th:field="*{numeroLicencia}" required>
+          </div>
+          <div>
+            <label for="fechaExpedicionLicencia">Fecha de expedición o renovación</label>
+            <input type="date" th:field="*{fechaExpedicionLicencia}" required>
+          </div>
+        </div>
+
+        <h2>Vehículo</h2>
+        <div class="fila">
+          <div>
+            <label for="placaVehiculo">Placa</label>
+            <input type="text" th:field="*{placaVehiculo}" placeholder="Ej. ABC123" required>
+          </div>
+          <div>
+            <label for="asientosVehiculo">Número de pasajeros</label>
+            <input type="number" th:field="*{asientosVehiculo}" min="1" placeholder="Ej. 4" required>
+          </div>
+          <div>
+            <label for="marcaVehiculo">Marca</label>
+            <input type="text" th:field="*{marcaVehiculo}" placeholder="Ej. Renault">
+          </div>
+          <div>
+            <label for="modeloVehiculo">Modelo</label>
+            <input type="text" th:field="*{modeloVehiculo}" placeholder="Ej. Duster 2022">
+          </div>
+          <div>
+            <label for="fechaVencimientoSoat">Vencimiento del SOAT</label>
+            <input type="date" th:field="*{fechaVencimientoSoat}" required>
+          </div>
+          <div>
+            <label for="fechaVencimientoTecnomecanica">Vencimiento de la tecnomecánica</label>
+            <input type="date" th:field="*{fechaVencimientoTecnomecanica}" required>
+          </div>
+        </div>
+      </th:block>
+
+      <button type="submit" th:text="${formulario.esConductor()} ? 'Enviar solicitud' : 'Crear cuenta'">Crear cuenta</button>
+    </form>
+
+    <p class="link">¿Ya tienes cuenta? <a th:href="@{/login}">Inicia sesión</a></p>
+  </div>
+</body>
+</html>
