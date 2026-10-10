@@ -14,5 +14,7 @@ public record DatosRegistro(
         int edad,
         String numeroLicencia,
         LocalDate fechaExpedicionLicencia,
-        String placaVehiculo) {
+        String placaVehiculo,
+        LocalDate fechaVencimientoSoat,
+        LocalDate fechaVencimientoTecnomecanica) {
 }

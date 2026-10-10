@@ -10,12 +10,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistroServiceTest {
 
-    // validarRequisitos no usa la base de datos, por eso los repositorios van null
+    
     private final RegistroService servicio = new RegistroService(null, null, null);
 
     private DatosRegistro conductor(int edad, LocalDate fechaLicencia) {
+        // SOAT y tecnomecánica vigentes (vencen dentro de un año)
+        return conductor(edad, fechaLicencia,
+                LocalDate.now().plusYears(1), LocalDate.now().plusYears(1));
+    }
+
+    private DatosRegistro conductor(int edad, LocalDate fechaLicencia,
+                                    LocalDate soat, LocalDate tecno) {
         return new DatosRegistro("Juan Pérez", "juan@correo.com", "3001234567",
-                "123456", "CONDUCTOR", edad, "LIC123", fechaLicencia, "ABC123");
+                "123456", "CONDUCTOR", edad, "LIC123", fechaLicencia, "ABC123",
+                soat, tecno);
     }
 
     @Test
@@ -52,6 +60,40 @@ class RegistroServiceTest {
     void sinFechaDeLicenciaNoEsValido() {
         ResultadoValidacion r = servicio.validarRequisitos(conductor(30, null));
         assertFalse(r.valido());
+    }
+
+    @Test
+    void soatVencidoNoEsValido() {
+        ResultadoValidacion r = servicio.validarRequisitos(
+                conductor(30, LocalDate.now().minusYears(5),
+                        LocalDate.now().minusDays(1), LocalDate.now().plusYears(1)));
+        assertFalse(r.valido());
+        assertTrue(r.errores().get(0).contains("SOAT"));
+    }
+
+    @Test
+    void tecnomecanicaVencidaNoEsValida() {
+        ResultadoValidacion r = servicio.validarRequisitos(
+                conductor(30, LocalDate.now().minusYears(5),
+                        LocalDate.now().plusYears(1), LocalDate.now().minusDays(1)));
+        assertFalse(r.valido());
+        assertTrue(r.errores().get(0).contains("tecnomecánica"));
+    }
+
+    @Test
+    void sinFechasDeSoatYTecnomecanicaNoEsValido() {
+        ResultadoValidacion r = servicio.validarRequisitos(
+                conductor(30, LocalDate.now().minusYears(5), null, null));
+        assertFalse(r.valido());
+        assertEquals(2, r.errores().size());
+    }
+
+    @Test
+    void soatQueVenceHoySigueVigente() {
+        ResultadoValidacion r = servicio.validarRequisitos(
+                conductor(30, LocalDate.now().minusYears(5),
+                        LocalDate.now(), LocalDate.now()));
+        assertTrue(r.valido());
     }
 
     @Test

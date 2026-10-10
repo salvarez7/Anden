@@ -27,17 +27,16 @@ public class RegistroService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Revisa los requisitos del conductor (mayor de edad y licencia de 2 años)
-    // y devuelve los mensajes de error para mostrarle al usuario.
+   
     public ResultadoValidacion validarRequisitos(DatosRegistro datos) {
         List<String> errores = new ArrayList<>();
 
-        // Mayoría de edad
+        
         if (datos.edad() < 18) {
             errores.add("Debes ser mayor de edad (18 años o más) para registrarte como conductor.");
         }
 
-        // Licencia con mínimo 2 años de expedición o renovación
+        
         LocalDate fechaLicencia = datos.fechaExpedicionLicencia();
         if (fechaLicencia == null) {
             errores.add("Debes ingresar la fecha de expedición de tu licencia.");
@@ -47,11 +46,25 @@ public class RegistroService {
             errores.add("Tu licencia debe tener mínimo 2 años de expedición o renovación.");
         }
 
+        
+        if (!estaVigente(datos.fechaVencimientoSoat())) {
+            errores.add("Tu SOAT debe estar vigente.");
+        }
+
+   
+        if (!estaVigente(datos.fechaVencimientoTecnomecanica())) {
+            errores.add("Tu revisión tecnomecánica debe estar vigente.");
+        }
+
         return new ResultadoValidacion(errores.isEmpty(), errores);
     }
 
-    // Guarda el usuario (y los datos extra si es conductor).
-    // Si algo está mal lanza IllegalArgumentException con el mensaje a mostrar.
+   
+    private boolean estaVigente(LocalDate fechaVencimiento) {
+        return fechaVencimiento != null && !fechaVencimiento.isBefore(LocalDate.now());
+    }
+
+   
     public Usuario guardarUsuario(DatosRegistro datos) {
         String correo = datos.correo().trim().toLowerCase();
 
@@ -84,7 +97,9 @@ public class RegistroService {
                     datos.edad(),
                     datos.numeroLicencia(),
                     datos.fechaExpedicionLicencia(),
-                    datos.placaVehiculo());
+                    datos.placaVehiculo(),
+                    datos.fechaVencimientoSoat(),
+                    datos.fechaVencimientoTecnomecanica());
             conductorRepository.save(conductor); // queda PENDIENTE_VERIFICACION
         }
 
