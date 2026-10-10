@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inicio</title>
+  <style>
+  body{font-family:system-ui,sans-serif;background:#f4f1ec;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+  .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:360px}
+  h1{margin-top:0;font-size:1.4rem}
+  label{display:block;margin:14px 0 4px;font-size:.9rem}
+  input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+  button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
+  .msg{padding:10px;border-radius:8px;margin-bottom:12px;font-size:.9rem}
+  .error{background:#fde8e8;color:#9b1c1c}
+  .ok{background:#e6f4ea;color:#1e6b34}
+  p.link{text-align:center;font-size:.9rem}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>¡Bienvenido!</h1>
+    <p>Sesión iniciada como <strong th:text="${correo}">correo</strong></p>
+
+    <form th:action="@{/logout}" method="post">
+      <button type="submit">Cerrar sesión</button>
+    </form>
+  </div>
+</body>
+</html>
