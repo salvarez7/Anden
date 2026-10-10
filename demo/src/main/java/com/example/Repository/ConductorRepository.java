@@ -11,6 +11,6 @@ public interface ConductorRepository
 
     Optional<Conductor> findByCorreo(String correo);
 
-    // Lo va a usar el administrador (Sprint 6) para ver los pendientes
+    
     List<Conductor> findByEstado(String estado);
 }
