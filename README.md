@@ -26,6 +26,7 @@ GitHub ejecuta el pipeline en cada push y pull request. El estado actual se ve e
 Santiago (Base del proyecto, pipeline de CI y README) -  `ci/pipeline-inicial`
 Sofia (Lógica de estimación datos y cálculo) - `feat/h12-logica`
 Nikol ( Pruebas automatizadas y pantalla) - `pruebas/vista`
+Sofia (Sprint 1: formulario de registro de turista y conductor, validación de correo y teléfono y perfil turista) - `feat/sofia-registro`
  
 ## Uso de IA
 Se usó Claude como apoyo para generar un borrador del código, de las pruebas y del workflow.

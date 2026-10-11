@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f4f1ec;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:16px;box-sizing:border-box;color:#1A1E29}
+    .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:420px;box-sizing:border-box}
+    h1{margin-top:0;font-size:1.4rem}
+    dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0}
+    dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
+    dd{margin:2px 0 0}
+    button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Hola, <span th:text="${usuario?.nombre}">turista</span></h1>
+    <p>Este es tu perfil de turista en Andén.</p>
+
+    <dl th:if="${usuario}">
+      <dt>Nombre</dt><dd th:text="${usuario.nombre}">Nombre</dd>
+      <dt>Correo</dt><dd th:text="${usuario.correo}">correo</dd>
+      <dt>Teléfono / WhatsApp</dt><dd th:text="${usuario.telefono} ?: 'Sin registrar'">teléfono</dd>
+    </dl>
+
+    <form th:action="@{/logout}" method="post">
+      <button type="submit">Cerrar sesión</button>
+    </form>
+  </div>
+</body>
+</html>
