@@ -10,7 +10,7 @@
     h1{margin-top:0;font-size:1.4rem}
     h2{font-size:1rem;margin:24px 0 0;color:#132D46}
     label{display:block;margin:14px 0 4px;font-size:.9rem}
-    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit}
+    input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
     button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
     .msg{padding:10px;border-radius:8px;margin-bottom:12px;font-size:.9rem}
     .error{background:#fde8e8;color:#9b1c1c}
@@ -107,6 +107,14 @@
           <div>
             <label for="asientosVehiculo">Número de pasajeros</label>
             <input type="number" th:field="*{asientosVehiculo}" min="1" placeholder="Ej. 4" required>
+          </div>
+          <div>
+            <label for="gamaVehiculo">Gama</label>
+            <!-- Sprint 2: las opciones salen del enum Gama (Java) -->
+            <select th:field="*{gamaVehiculo}" required>
+              <option value="">Elige una gama</option>
+              <option th:each="g : ${gamas}" th:value="${g.codigo}" th:text="${g.etiqueta}">Gama</option>
+            </select>
           </div>
           <div>
             <label for="marcaVehiculo">Marca</label>

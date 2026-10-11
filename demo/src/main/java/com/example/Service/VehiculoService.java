@@ -19,7 +19,6 @@ public class VehiculoService {
         this.vehiculoRepository = vehiculoRepository;
     }
 
-   
     // true si el vehículo existe
     public boolean estaDisponible(String vehiculoId, LocalDate inicio, LocalDate fin) {
         return vehiculoRepository.findById(vehiculoId)

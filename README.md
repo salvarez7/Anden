@@ -32,4 +32,4 @@ Sofia (Sprint 1: formulario de registro de turista y conductor, validación de c
 Se usó Claude como apoyo para generar un borrador del código, de las pruebas y del workflow.
 El equipo revisó el código, ejecutó las pruebas, ajustó los valores de tarifa y validó que cumple los criterios de la historia.
  
- s
+ 

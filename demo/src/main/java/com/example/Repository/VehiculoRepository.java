@@ -10,4 +10,8 @@ public interface VehiculoRepository extends MongoRepository<Vehiculo, String> {
     List<Vehiculo> findByCorreoConductor(String correoConductor);
 
     List<Vehiculo> findByGama(String gama);
+
+    List<Vehiculo> findByNumeroAsientosGreaterThanEqual(int asientosMinimos);
+
+    List<Vehiculo> findByGamaAndNumeroAsientosGreaterThanEqual(String gama, int asientosMinimos);
 }

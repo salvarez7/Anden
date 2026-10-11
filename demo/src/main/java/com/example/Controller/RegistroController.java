@@ -1,5 +1,7 @@
 package com.example.Controller;
 
+import com.example.Model.Gama;
+import com.example.Service.CatalogoVehiculosService;
 import com.example.Service.DatosRegistro;
 import com.example.Service.RegistroService;
 import org.springframework.stereotype.Controller;
@@ -17,9 +19,12 @@ import java.util.List;
 public class RegistroController {
 
     private final RegistroService registroService;
+    private final CatalogoVehiculosService catalogoVehiculosService;
 
-    public RegistroController(RegistroService registroService) {
+    public RegistroController(RegistroService registroService,
+                              CatalogoVehiculosService catalogoVehiculosService) {
         this.registroService = registroService;
+        this.catalogoVehiculosService = catalogoVehiculosService;
     }
 
     // Muestra el formulario. de registro a turista o si es conductor a conductor
@@ -28,24 +33,34 @@ public class RegistroController {
         FormularioRegistro formulario = new FormularioRegistro();
         formulario.setTipoUsuario("CONDUCTOR".equalsIgnoreCase(tipo) ? "CONDUCTOR" : "TURISTA");
         model.addAttribute("formulario", formulario);
+        model.addAttribute("gamas", Gama.values()); // opciones de gama (Sprint 2)
         return "registro";
     }
 
-    // Recibe el formulario
+    // para recibir lo que se escribio en el formulario
     @PostMapping("/registro")
     public String registrar(@ModelAttribute("formulario") FormularioRegistro formulario, Model model) {
         DatosRegistro datos = formulario.aDatosRegistro();
 
-        //  Validaciones (requisitos si es conductor)
+        //  Valida los requisitos si es conductor
         List<String> errores = new ArrayList<>(registroService.validarDatosBasicos(datos).errores());
+        Gama gama = Gama.desde(formulario.getGamaVehiculo());
         if (formulario.esConductor()) {
             errores.addAll(registroService.validarRequisitos(datos).errores());
+            if (gama == null) {
+                errores.add("Elige la gama de tu vehículo.");
+            }
         }
 
-        // 2. si esta bien lo guarda en la BD y si algo avisa si el correo ya esta registrado
+        //si todo esta bien lo guarda en la BD
         if (errores.isEmpty()) {
             try {
                 registroService.guardarUsuario(datos);
+                // guardamos el conductor con su vehículo en la colección creada vehículos
+                if (formulario.esConductor()) {
+                    catalogoVehiculosService.registrarVehiculoDeConductor(datos.correo(),
+                            datos.marcaVehiculo(), datos.modeloVehiculo(), gama, datos.asientosVehiculo());
+                }
             } catch (IllegalArgumentException e) {
                 errores.add(e.getMessage());
             }
@@ -55,10 +70,11 @@ public class RegistroController {
             // Se muestra el formulario con los mensajes de error
             formulario.setPassword(null);
             model.addAttribute("errores", errores);
+            model.addAttribute("gamas", Gama.values());
             return "registro";
         }
 
-        //  muestra cuenta creada
+        //  muestra cuenta cresda
         return "redirect:/login?registrado";
     }
 }

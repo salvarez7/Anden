@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistroServiceTest {
 
-    // validarRequisitos no usa la base de datos, por eso los repositorios van null
     private final RegistroService servicio = new RegistroService(null, null, null);
 
     private DatosRegistro conductor(int edad, LocalDate fechaLicencia) {
@@ -75,8 +74,6 @@ class RegistroServiceTest {
         assertEquals(2, r.errores().size());
     }
 
-    // ---- H1: formato de correo y teléfono (Sofía) ----
-
     @Test
     void turistaConDatosCorrectosEsValido() {
         assertTrue(servicio.validarDatosBasicos(turista("ana@correo.com", "3001234567")).valido());
@@ -114,7 +111,6 @@ class RegistroServiceTest {
         assertFalse(servicio.validarDatosBasicos(admin).valido());
     }
 
-    // ---- H2: SOAT y tecnomecánica al día (Sofía) ----
 
     @Test
     void soatVencidoNoEsValido() {

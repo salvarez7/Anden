@@ -20,10 +20,11 @@ public class RegistroService {
     private final ConductorRepository conductorRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // texto@texto.dominio (sin espacios)
+    // para poner el formato que debe tener el correo
     private static final Pattern FORMATO_CORREO =
             Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    // Celular colombiano: 10 dígitos que empiezan por 3 (ej. 3001234567)
+
+    // solo se pueden # de colombia
     private static final Pattern FORMATO_TELEFONO = Pattern.compile("^3\\d{9}$");
 
     public RegistroService(UsuarioRepository usuarioRepository,
@@ -34,8 +35,6 @@ public class RegistroService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Quita espacios, guiones, paréntesis y el +57 para dejar solo los 10 dígitos.
-    // Ej: "+57 300 123-4567" -> "3001234567"
     public static String normalizarTelefono(String telefono) {
         if (telefono == null) {
             return "";
@@ -47,8 +46,7 @@ public class RegistroService {
         return soloDigitos;
     }
 
-    // Revisa los datos que piden tanto turista como conductor
-    // (H1: nombre, correo, teléfono y contraseña con formato correcto).
+    // Revisa el formato de los datos para evitarnos errores
     public ResultadoValidacion validarDatosBasicos(DatosRegistro datos) {
         List<String> errores = new ArrayList<>();
 
@@ -68,7 +66,6 @@ public class RegistroService {
             errores.add("La contraseña debe tener mínimo 6 caracteres.");
         }
 
-        // Solo se puede crear cuenta de turista o de conductor (nunca de administrador)
         if (!"TURISTA".equalsIgnoreCase(datos.tipoUsuario())
                 && !"CONDUCTOR".equalsIgnoreCase(datos.tipoUsuario())) {
             errores.add("Tipo de usuario no válido.");
@@ -77,12 +74,11 @@ public class RegistroService {
         return new ResultadoValidacion(errores.isEmpty(), errores);
     }
 
-    // Revisa los requisitos del conductor (mayor de edad, licencia de 2 años,
-    // datos del vehículo, SOAT y tecnomecánica) y devuelve los mensajes de error para mostrarle al usuario.
+    // Revisa los requisitos del conductor
     public ResultadoValidacion validarRequisitos(DatosRegistro datos) {
         List<String> errores = new ArrayList<>();
 
-        // Mayoría de edad
+
         if (datos.edad() < 18) {
             errores.add("Debes ser mayor de edad (18 años o más) para registrarte como conductor.");
         }
@@ -91,7 +87,7 @@ public class RegistroService {
             errores.add("Debes ingresar el número de tu licencia de conducción.");
         }
 
-        // Licencia con mínimo 2 años de expedición o renovación
+
         LocalDate fechaLicencia = datos.fechaExpedicionLicencia();
         if (fechaLicencia == null) {
             errores.add("Debes ingresar la fecha de expedición de tu licencia.");
@@ -101,7 +97,7 @@ public class RegistroService {
             errores.add("Tu licencia debe tener mínimo 2 años de expedición o renovación.");
         }
 
-        // Información del vehículo
+
         if (datos.placaVehiculo() == null || datos.placaVehiculo().isBlank()) {
             errores.add("Debes ingresar la placa del vehículo.");
         }
@@ -122,8 +118,7 @@ public class RegistroService {
         return new ResultadoValidacion(errores.isEmpty(), errores);
     }
 
-    // Guarda el usuario (y los datos extra si es conductor).
-    // Si algo está mal lanza IllegalArgumentException con el mensaje a mostrar.
+    // Guarda el usuario
     public Usuario guardarUsuario(DatosRegistro datos) {
         ResultadoValidacion basicos = validarDatosBasicos(datos);
         if (!basicos.valido()) {
@@ -146,7 +141,6 @@ public class RegistroService {
             }
         }
 
-        // El passwordEncoder es el que definió Santiago en SecurityConfig
         Usuario usuario = new Usuario(
                 datos.nombre().trim(),
                 correo,
@@ -169,7 +163,7 @@ public class RegistroService {
                     datos.asientosVehiculo(),
                     datos.fechaVencimientoSoat(),
                     datos.fechaVencimientoTecnomecanica());
-            conductorRepository.save(conductor); // queda PENDIENTE_VERIFICACION
+            conductorRepository.save(conductor);
         }
 
         return usuario;
