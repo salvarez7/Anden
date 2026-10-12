@@ -25,13 +25,14 @@
     dd{margin:2px 0 0}
     .msg{padding:14px;border-radius:8px;background:#ffffff;color:#132D46}
     a{color:#132D46}
+    .reservar{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#132D46;color:#ffffff;text-align:center;font-weight:600;text-decoration:none}
   </style>
 </head>
 <body>
 <main>
   <h1>Busca el vehículo para tu estadía</h1>
 
-  <!-- method="get": los filtros viajan en la URL (/vehiculos?gama=premium&asientos=5) -->
+  
   <form class="filtros" th:action="@{/vehiculos}" method="get">
     <div>
       <label for="gama">Gama</label>
@@ -50,7 +51,7 @@
     <button type="submit">Buscar</button>
   </form>
 
-  <!-- RF-13: mensaje cuando no hay resultados -->
+ 
   <p class="msg" th:if="${#lists.isEmpty(resultados)}">
     No encontramos vehículos disponibles con esos filtros. Prueba con otra gama o con menos pasajeros.
   </p>
@@ -67,6 +68,8 @@
         <dt>Conductor</dt><dd th:text="${r.conductor.nombre}">Nombre</dd>
         <dt>Placa</dt><dd th:text="${r.conductor.placaVehiculo}">ABC123</dd>
       </dl>
+     
+      <a class="reservar" th:href="@{/reservas/nueva(vehiculoId=${r.vehiculo.id})}">Reservar</a>
     </article>
   </div>
 
