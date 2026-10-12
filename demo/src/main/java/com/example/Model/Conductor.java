@@ -5,8 +5,7 @@ import java.time.LocalDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-// Datos extra que solo tiene un conductor.
-// Se une con el usuario por medio del correo.
+// algunos datos solo los tiene un conductor
 @Document(collection = "conductores")
 public class Conductor {
 

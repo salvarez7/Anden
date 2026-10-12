@@ -12,6 +12,7 @@
     dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
     dd{margin:2px 0 0}
     button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
+    .boton{display:block;margin-top:20px;padding:11px;border-radius:8px;background:#ffffff;color:#132D46;text-align:center;font-weight:600;text-decoration:none}
   </style>
 </head>
 <body>
@@ -24,6 +25,9 @@
       <dt>Correo</dt><dd th:text="${usuario.correo}">correo</dd>
       <dt>Teléfono / WhatsApp</dt><dd th:text="${usuario.telefono} ?: 'Sin registrar'">teléfono</dd>
     </dl>
+
+    <!-- Sprint 2: ir a buscar vehículos con filtros -->
+    <a class="boton" th:href="@{/vehiculos}">Buscar vehículos</a>
 
     <form th:action="@{/logout}" method="post">
       <button type="submit">Cerrar sesión</button>

@@ -5,8 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
-// Guarda lo que el usuario escribe en registro.html
-
+// Guarda lo que el usuario escribe en registro
 public class FormularioRegistro {
 
     private String tipoUsuario = "TURISTA"; // si es Turista o conductor
@@ -15,7 +14,7 @@ public class FormularioRegistro {
     private String telefono;
     private String password;
 
-    // Solo necesario para conductor
+    // Solo se necesita para conductor
     private Integer edad;
     private String numeroLicencia;
 
@@ -25,6 +24,7 @@ public class FormularioRegistro {
     private String marcaVehiculo;
     private String modeloVehiculo;
     private Integer asientosVehiculo;
+    private String gamaVehiculo; // Sprint 2: "economica", "estandar" o "premium"
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fechaVencimientoSoat;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -65,6 +65,7 @@ public class FormularioRegistro {
     public String getMarcaVehiculo() { return marcaVehiculo; }
     public String getModeloVehiculo() { return modeloVehiculo; }
     public Integer getAsientosVehiculo() { return asientosVehiculo; }
+    public String getGamaVehiculo() { return gamaVehiculo; }
     public LocalDate getFechaVencimientoSoat() { return fechaVencimientoSoat; }
     public LocalDate getFechaVencimientoTecnomecanica() { return fechaVencimientoTecnomecanica; }
 
@@ -80,6 +81,7 @@ public class FormularioRegistro {
     public void setMarcaVehiculo(String marcaVehiculo) { this.marcaVehiculo = marcaVehiculo; }
     public void setModeloVehiculo(String modeloVehiculo) { this.modeloVehiculo = modeloVehiculo; }
     public void setAsientosVehiculo(Integer asientosVehiculo) { this.asientosVehiculo = asientosVehiculo; }
+    public void setGamaVehiculo(String gamaVehiculo) { this.gamaVehiculo = gamaVehiculo; }
     public void setFechaVencimientoSoat(LocalDate f) { this.fechaVencimientoSoat = f; }
     public void setFechaVencimientoTecnomecanica(LocalDate f) { this.fechaVencimientoTecnomecanica = f; }
 }

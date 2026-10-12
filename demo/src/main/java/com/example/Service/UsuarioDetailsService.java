@@ -20,7 +20,7 @@ public class UsuarioDetailsService implements UserDetailsService {
     // El "username" de Spring Security es el correo del usuario
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
+        Usuario usuario = usuarioRepository.findByCorreo(correo.trim().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         return User.withUsername(usuario.getCorreo())
