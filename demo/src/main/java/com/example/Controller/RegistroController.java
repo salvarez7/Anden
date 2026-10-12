@@ -3,6 +3,7 @@ package com.example.Controller;
 import com.example.Model.Gama;
 import com.example.Service.CatalogoVehiculosService;
 import com.example.Service.DatosRegistro;
+import com.example.Service.FotoVehiculoService;
 import com.example.Service.RegistroService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +22,14 @@ public class RegistroController {
 
     private final RegistroService registroService;
     private final CatalogoVehiculosService catalogoVehiculosService;
+    private final FotoVehiculoService fotoVehiculoService;
 
     public RegistroController(RegistroService registroService,
-                              CatalogoVehiculosService catalogoVehiculosService) {
+                              CatalogoVehiculosService catalogoVehiculosService,
+                              FotoVehiculoService fotoVehiculoService) {
         this.registroService = registroService;
         this.catalogoVehiculosService = catalogoVehiculosService;
+        this.fotoVehiculoService = fotoVehiculoService;
     }
 
     // Muestra el formulario. de registro a turista o si es conductor a conductor
@@ -37,9 +42,11 @@ public class RegistroController {
         return "registro";
     }
 
-    // para recibir lo que se escribio en el formulario
+    // para recibir lo que se escribio en el formulario (y las fotos del vehículo si es conductor)
     @PostMapping("/registro")
-    public String registrar(@ModelAttribute("formulario") FormularioRegistro formulario, Model model) {
+    public String registrar(@ModelAttribute("formulario") FormularioRegistro formulario,
+                            @RequestParam(value = "fotos", required = false) List<MultipartFile> fotos,
+                            Model model) {
         DatosRegistro datos = formulario.aDatosRegistro();
 
         //  Valida los requisitos si es conductor
@@ -50,16 +57,19 @@ public class RegistroController {
             if (gama == null) {
                 errores.add("Elige la gama de tu vehículo.");
             }
+            errores.addAll(fotoVehiculoService.validar(fotos));
         }
 
         //si todo esta bien lo guarda en la BD
         if (errores.isEmpty()) {
             try {
                 registroService.guardarUsuario(datos);
-                // guardamos el conductor con su vehículo en la colección creada vehículos
+                // guardamos el conductor con su vehículo (y sus fotos) en la colección vehículos
                 if (formulario.esConductor()) {
+                    List<String> idsFotos = fotoVehiculoService.guardar(fotos);
                     catalogoVehiculosService.registrarVehiculoDeConductor(datos.correo(),
-                            datos.marcaVehiculo(), datos.modeloVehiculo(), gama, datos.asientosVehiculo());
+                            datos.marcaVehiculo(), datos.modeloVehiculo(), gama,
+                            datos.asientosVehiculo(), idsFotos);
                 }
             } catch (IllegalArgumentException e) {
                 errores.add(e.getMessage());

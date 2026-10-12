@@ -28,11 +28,18 @@ public class CatalogoVehiculosService {
     // se guarda el carro que el conductor puso
     public Vehiculo registrarVehiculoDeConductor(String correoConductor, String marca, String modelo,
                                                  Gama gama, int asientos) {
+        return registrarVehiculoDeConductor(correoConductor, marca, modelo, gama, asientos, new ArrayList<>());
+    }
+
+    // lo mismo, pero con los ids de las fotos que subió el conductor
+    public Vehiculo registrarVehiculoDeConductor(String correoConductor, String marca, String modelo,
+                                                 Gama gama, int asientos, List<String> fotos) {
         String nombreCarro = ((marca == null ? "" : marca.trim()) + " "
                 + (modelo == null ? "" : modelo.trim())).trim();
 
         Vehiculo vehiculo = new Vehiculo(correoConductor.trim().toLowerCase(),
                 nombreCarro, gama.getCodigo(), asientos);
+        vehiculo.setFotos(new ArrayList<>(fotos));
         return vehiculoRepository.save(vehiculo);
     }
 
