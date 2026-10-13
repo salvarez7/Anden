@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Andén — Prototipo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#132D46;        /* Primario — identidad de marca */
+  --ink-deep:#0B1E30;   /* variante oscura del primario, para degradados/hover */
+  --paper:#FFFFFF;      /* Fondo — blanco */
+  --paper2:#EEF0F3;     /* neutro decorativo (no contenido) */
+  --orange:#01C38E;     /* Secundario — acción */
+  --orange-dark:#00A67A;/* Secundario, variante oscura para hover */
+  --green:#01C38E;      /* alias del secundario para estados positivos/indicadores */
+  --text:#1A1E29;       /* Texto */
+  --line: rgba(26,30,41,.14);
+  --line-light: rgba(255,255,255,.28);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--paper2);color:var(--text);font-family:'Work Sans',sans-serif;}
+h1,h2,h3,.display{font-family:'Fraunces',serif;letter-spacing:-.01em;}
+.mono{font-family:'Space Mono',monospace;}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ---- fake browser chrome / tab nav ---- */
+.chrome{position:sticky;top:0;z-index:50;background:var(--ink);color:var(--paper);padding:14px 24px;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.chrome-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.chrome-brand{font-family:'Fraunces',serif;font-weight:800;font-size:20px;letter-spacing:.02em;}
+.chrome-brand span{color:var(--orange);}
+.chrome-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.55;font-family:'Space Mono',monospace;}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.tab{background:transparent;border:1px solid var(--line-light);color:var(--paper);opacity:.7;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.15s;}
+.tab:hover{opacity:1;border-color:var(--paper);}
+.tab.active{background:var(--orange);border-color:var(--orange);opacity:1;color:var(--ink);font-weight:600;}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.dot.turista{background:var(--orange);}
+.dot.conductor{background:rgba(255,255,255,.55);}
+.tab.active .dot{background:var(--ink);}
+.tab-divider{width:1px;background:var(--line-light);margin:4px 4px;}
+
+/* ---- screens ---- */
+.screen{display:none;}
+.screen.active{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.wrap{max-width:1100px;margin:0 auto;padding:48px 24px 80px;}
+.wrap-narrow{max-width:760px;}
+
+/* ---- site nav (inside Inicio screen) ---- */
+.sitenav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:var(--ink);}
+.sitenav .brand{font-family:'Fraunces',serif;font-weight:800;font-size:22px;color:#fff;}
+.sitenav .brand span{color:var(--orange);}
+.navlinks{display:flex;gap:26px;font-size:14px;font-weight:500;color:#fff;opacity:.85;}
+.btn-outline{border:1.5px solid var(--ink);color:var(--ink);background:transparent;padding:9px 18px;border-radius:22px;font-size:13.5px;font-weight:600;}
+.btn-outline.on-dark{border-color:rgba(255,255,255,.6);color:#fff;}
+
+/* ---- hero ---- */
+.hero{background:var(--ink);color:var(--paper);padding:70px 24px 90px;position:relative;overflow:hidden;}
+.hero-inner{max-width:1100px;margin:0 auto;}
+.eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:16px;}
+.hero h1{font-size:46px;line-height:1.08;font-weight:700;max-width:640px;margin:0 0 18px;}
+.hero h1 em{font-style:italic;font-weight:500;color:var(--orange);}
+.hero p{font-size:17px;max-width:480px;opacity:.85;line-height:1.55;margin:0 0 34px;}
+
+/* search ticket widget */
+.searchbar{background:var(--paper);color:var(--text);border-radius:14px;display:flex;flex-wrap:wrap;padding:8px;gap:2px;max-width:720px;box-shadow:0 20px 40px rgba(0,0,0,.25);}
+.sfield{flex:1;min-width:130px;padding:12px 16px;border-right:1px solid var(--line);}
+.sfield:last-of-type{border-right:none;}
+.sfield label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;opacity:.55;margin-bottom:3px;font-family:'Space Mono',monospace;}
+.sfield .val{font-size:14.5px;font-weight:600;}
+.btn-cta{background:var(--orange);color:var(--ink);border:none;padding:0 26px;border-radius:10px;font-weight:700;font-size:14.5px;white-space:nowrap;margin:4px;}
+
+/* how it works stubs */
+.howrow{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:-46px;position:relative;z-index:2;padding:0 24px;max-width:1100px;margin-left:auto;margin-right:auto;}
+.stub{background:var(--paper);border-radius:12px;padding:22px 20px;box-shadow:0 12px 24px rgba(0,0,0,.12);border-top:3px solid var(--ink);}
+.stub .n{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink);font-weight:700;margin-bottom:8px;}
+.stub h3{font-size:16.5px;margin:0 0 6px;}
+.stub p{font-size:13.5px;line-height:1.5;margin:0;opacity:.8;}
+
+.section{padding:70px 24px;}
+.section h2{font-size:28px;margin:0 0 8px;}
+.section .lead{font-size:14.5px;opacity:.65;max-width:480px;margin-bottom:34px;}
+
+/* ---- search results screen ---- */
+.results-layout{display:grid;grid-template-columns:220px 1fr;gap:32px;}
+.filters{background:var(--paper);border-radius:14px;padding:22px;height:fit-content;border:1px solid var(--line);}
+.filters h4{font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono',monospace;opacity:.6;margin:18px 0 10px;}
+.filters h4:first-child{margin-top:0;}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{border:1.3px solid var(--line);padding:6px 12px;border-radius:16px;font-size:12.5px;background:transparent;}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+.dcard{background:var(--paper);border-radius:14px;border:1px solid var(--line);display:flex;gap:18px;padding:18px;margin-bottom:16px;position:relative;}
+.dphoto{width:92px;height:92px;border-radius:12px;background:linear-gradient(135deg,var(--ink),var(--ink-deep));flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--paper);font-family:'Fraunces',serif;font-weight:700;font-size:26px;}
+.dinfo{flex:1;}
+.dinfo .name{font-family:'Fraunces',serif;font-weight:700;font-size:18px;margin-bottom:2px;}
+.dinfo .zone{font-size:12.5px;opacity:.6;margin-bottom:8px;}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.tag{font-size:11px;padding:4px 9px;border-radius:10px;font-weight:600;}
+.tag.gama{background:rgba(19,45,70,.09);color:var(--ink);}
+.tag.seats{background:rgba(1,195,142,.14);color:#00966E;}
+.stars{color:var(--ink);font-size:13px;}
+.dside{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:110px;}
+.price{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;}
+.price small{display:block;font-family:'Work Sans',sans-serif;font-weight:400;font-size:10.5px;opacity:.55;text-transform:uppercase;letter-spacing:.06em;}
+.btn-mini{background:var(--ink);color:var(--paper);border:none;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;}
+
+/* ---- driver profile screen ---- */
+.profile-hero{display:grid;grid-template-columns:1fr 1.3fr;gap:40px;align-items:start;}
+.pf-photo{aspect-ratio:1;border-radius:16px;background:linear-gradient(150deg,var(--ink),var(--ink-deep));display:flex;align-items:center;justify-content:center;color:var(--paper);font-family:'Fraunces',serif;font-size:64px;font-weight:700;}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.gallery div{aspect-ratio:1;border-radius:8px;background:var(--paper2);border:1px solid var(--line);}
+.pf-name{font-size:30px;margin:0 0 4px;}
+.pf-meta{font-size:14px;opacity:.65;margin-bottom:18px;}
+.pf-facts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;}
+.fact{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+.fact .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.55;font-family:'Space Mono',monospace;margin-bottom:4px;}
+.fact .v{font-weight:600;font-size:14.5px;}
+.avail-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px;}
+.avail-table th{text-align:left;font-family:'Space Mono',monospace;font-size:10.5px;text-transform:uppercase;opacity:.5;padding:6px 0;font-weight:400;}
+.avail-table td{padding:8px 0;border-top:1px solid var(--line);}
+.avail-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;}
+.cta-row{display:flex;gap:12px;}
+.btn-wa{background:var(--green);color:var(--ink);border:none;padding:13px 22px;border-radius:10px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;}
+.btn-primary{background:var(--orange);color:var(--ink);border:none;padding:13px 24px;border-radius:10px;font-weight:700;font-size:14px;}
+
+/* ---- booking form ---- */
+.form-card{background:var(--paper);border-radius:16px;border:1px solid var(--line);padding:36px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;opacity:.7;}
+.field .box{border:1.4px solid var(--line);border-radius:9px;padding:12px 14px;font-size:14.5px;background:#fff;}
+.hint{font-size:11.5px;opacity:.5;margin-top:2px;}
+.estimate{background:var(--ink);color:var(--paper);border-radius:14px;padding:26px 28px;margin-top:26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.estimate .amt{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;color:var(--orange);}
+.estimate .note{font-size:12.5px;opacity:.7;max-width:340px;line-height:1.5;}
+
+/* ---- confirmation ticket ---- */
+.ticket{background:var(--paper);border-radius:18px;border:1px solid var(--line);display:flex;box-shadow:0 20px 50px rgba(0,0,0,.1);position:relative;overflow:visible;}
+.ticket-main{flex:1;padding:34px 36px;}
+.ticket-stub{width:220px;background:var(--ink);color:var(--paper);border-radius:0 18px 18px 0;padding:34px 26px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+.perf{position:absolute;top:0;bottom:0;left:0;width:0;border-left:2px dashed rgba(28,36,32,.25);}
+.perf::before, .perf::after{content:'';position:absolute;left:-13px;width:26px;height:26px;border-radius:50%;background:var(--paper2);}
+.perf::before{top:-13px;} .perf::after{bottom:-13px;}
+.ticket-status{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:10px;}
+.ticket-main h2{font-size:26px;margin:0 0 22px;}
+.trow{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line);font-size:14px;}
+.trow .k{opacity:.55;font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-family:'Space Mono',monospace;}
+.code{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:#FFFFFF;}
+.info-box{background:rgba(1,195,142,.10);border:1px solid rgba(1,195,142,.3);border-radius:10px;padding:16px 18px;font-size:13px;line-height:1.5;margin-top:26px;color:var(--text);}
+
+/* ---- driver registration ---- */
+.reqlist{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:38px;}
+.req{display:flex;gap:10px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:13.5px;line-height:1.4;}
+.req .check{width:18px;height:18px;border-radius:5px;background:var(--green);color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px;}
+.upload{border:1.5px dashed var(--line);border-radius:10px;padding:22px;text-align:center;font-size:13px;opacity:.6;}
+
+/* ---- driver dashboard ---- */
+.dash{display:grid;grid-template-columns:260px 1fr;gap:30px;}
+.dash-side{background:var(--ink);border-radius:16px;padding:26px;text-align:center;height:fit-content;}
+.dash-avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,var(--orange),var(--orange-dark));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:var(--ink);font-family:'Fraunces',serif;font-size:30px;font-weight:700;}
+.dash-side{color:#fff;}
+.dash-side .btn-outline{margin-top:2px;}
+.dash-card{background:var(--paper);border-radius:14px;border:1px solid var(--line);padding:24px 26px;margin-bottom:18px;}
+.dash-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-family:'Space Mono',monospace;opacity:.55;margin:0 0 16px;}
+.zone-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.zone-tags span{background:rgba(19,45,70,.08);color:var(--ink);padding:6px 13px;border-radius:14px;font-size:12.5px;font-weight:600;}
+.zone-tags span.add-link{background:transparent;color:#00966E;padding:6px 2px;}
+.weekgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.wcell{text-align:center;font-size:11px;}
+.wcell .d{font-family:'Space Mono',monospace;opacity:.5;margin-bottom:6px;}
+.wcell .bar{height:34px;border-radius:6px;background:var(--paper2);}
+.wcell .bar.on{background:var(--green);}
+.trip{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);font-size:13px;}
+.trip:first-of-type{border-top:none;}
+
+footer{background:var(--ink);color:var(--paper);padding:26px 24px;text-align:center;font-size:12px;opacity:.55;}
+
+@media(max-width:780px){
+  .profile-hero,.results-layout,.dash,.howrow,.form-row,.reqlist{grid-template-columns:1fr;}
+  .ticket{flex-direction:column;}
+  .ticket-stub{border-radius:0 0 18px 18px;}
+  .hero h1{font-size:32px;}
+}
+</style>
+</head>
+<body>
+
+<div class="chrome">
+  <div class="chrome-top">
+    <div class="chrome-brand">Andén<span>.</span></div>
+    <div class="chrome-label">Prototipo · mockup visual estático</div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-target="inicio"><span class="dot turista"></span>Inicio</button>
+    <button class="tab" data-target="buscar" data-href="/vehiculos"><span class="dot turista"></span>Buscar</button>
+    <button class="tab" data-target="dashboard"><span class="dot turista"></span>Panel de control</button>
+  </div>
+</div>
+
+<!-- ============ INICIO ============ -->
+<div class="screen active" id="inicio">
+  <div class="sitenav">
+    <div class="brand">Andén<span>.</span></div>
+    <div class="navlinks">
+      <span>Buscar conductor</span><span>Cómo funciona</span><span>Ser conductor</span>
+    </div>
+    <div th:unless="${autenticado}" style="display:flex;align-items:center;gap:10px">
+      <button class="btn-outline on-dark" onclick="window.location.href='/login'">Iniciar sesión</button>
+      <button class="btn-outline on-dark" style="background:var(--orange);border-color:var(--orange);color:var(--ink)" onclick="window.location.href='/registro'">Registrarme</button>
+    </div>
+    <div th:if="${autenticado}" style="display:flex;align-items:center;gap:12px;color:#fff;font-size:13.5px">
+      <span th:text="${correo}">correo</span>
+      <form th:action="@{/logout}" method="post" style="margin:0">
+        <button type="submit" class="btn-outline on-dark">Cerrar sesión</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Transporte turístico en Medellín</div>
+      <h1>Un conductor que se vuelve <em>tu cómplice</em> de viaje.</h1>
+      <p>Elige el carro, el conductor y los horarios. Habla directo por WhatsApp para cuadrar tu plan. Pagas solo al terminar el viaje.</p>
+      <div class="searchbar">
+        <div class="sfield"><label>Llegada</label><div class="val">14 ago 2026</div></div>
+        <div class="sfield"><label>Salida</label><div class="val">19 ago 2026</div></div>
+        <div class="sfield"><label>Pasajeros</label><div class="val">2 personas</div></div>
+        <button class="btn-cta" data-href="/vehiculos">Buscar conductores →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="howrow">
+    <div class="stub"><div class="n">01</div><h3>Elige a tu conductor</h3><p>Mira su perfil, su carro, su zona y su experiencia antes de reservar.</p></div>
+    <div class="stub"><div class="n">02</div><h3>Habla por WhatsApp</h3><p>Cuadra actividades y horarios directo con él, sin intermediarios.</p></div>
+    <div class="stub"><div class="n">03</div><h3>Paga al finalizar</h3><p>El valor se ajusta a lo que realmente viviste durante tu estadía.</p></div>
+  </div>
+
+  <div class="section wrap">
+    <h2>Piensa en el viaje, no en el trayecto</h2>
+    <p class="lead">Cada usuario puede ver quién lo acompañará, revisar su vehículo y su disponibilidad, y construir el itinerario junto a su conductor.</p>
+  </div>
+  <footer>Andén — prototipo de baja fidelidad, solo para fines de presentación.</footer>
+</div>
+
+<!-- ============ BUSCAR / RESULTADOS ============ -->
+<div class="screen" id="buscar">
+  <div class="wrap">
+    <h2>Conductores disponibles</h2>
+    <p class="lead">14 – 19 ago · 2 pasajeros · Medellín y alrededores</p>
+    <div class="results-layout">
+      <div class="filters">
+        <h4>Gama</h4>
+        <div class="chip-row">
+          <button class="chip on">Económico</button>
+          <button class="chip">Ejecutivo</button>
+          <button class="chip">Van</button>
+        </div>
+        <h4>Asientos</h4>
+        <div class="chip-row">
+          <button class="chip">1–3</button>
+          <button class="chip on">4–6</button>
+          <button class="chip">7+</button>
+        </div>
+        <h4>Zona</h4>
+        <div class="chip-row">
+          <button class="chip on">El Poblado</button>
+          <button class="chip">Laureles</button>
+          <button class="chip">Guatapé</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="dcard">
+          <div class="dphoto">CR</div>
+          <div class="dinfo">
+            <div class="name">Camilo Restrepo</div>
+            <div class="zone">El Poblado · Laureles · Guatapé</div>
+            <div class="tag-row"><span class="tag gama">Económico</span><span class="tag seats">4 puestos</span></div>
+            <div class="stars">★★★★★ <span style="color:var(--text);opacity:.5;font-size:12px;">4.9 (86 viajes)</span></div>
+          </div>
+          <div class="dside">
+            <div class="price">$85.000<small>por día aprox.</small></div>
+            <button class="btn-mini">Ver perfil</button>
+          </div>
+        </div>
+
+        <div class="dcard">
+          <div class="dphoto" style="background:linear-gradient(135deg,#1D4A73,#0B1E30)">LM</div>
+          <div class="dinfo">
+            <div class="name">Laura Muñoz</div>
+            <div class="zone">Envigado · Sabaneta</div>
+            <div class="tag-row"><span class="tag gama">Ejecutivo</span><span class="tag seats">4 puestos</span></div>
+            <div class="stars">★★★★★ <span style="color:var(--text);opacity:.5;font-size:12px;">5.0 (41 viajes)</span></div>
+          </div>
+          <div class="dside">
+            <div class="price">$120.000<small>por día aprox.</small></div>
+            <button class="btn-mini">Ver perfil</button>
+          </div>
+        </div>
+
+        <div class="dcard">
+          <div class="dphoto" style="background:linear-gradient(135deg,#132D46,#0B1E30)">JD</div>
+          <div class="dinfo">
+            <div class="name">Julián Duque</div>
+            <div class="zone">Guatapé · Oriente antioqueño</div>
+            <div class="tag-row"><span class="tag gama">Van</span><span class="tag seats">7 puestos</span></div>
+            <div class="stars">★★★★☆ <span style="color:var(--text);opacity:.5;font-size:12px;">4.6 (23 viajes)</span></div>
+          </div>
+          <div class="dside">
+            <div class="price">$160.000<small>por día aprox.</small></div>
+            <button class="btn-mini">Ver perfil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESERVA ============ -->
+<div class="screen" id="reserva">
+  <div class="wrap wrap-narrow">
+    <h2>Completa tu reserva</h2>
+    <p class="lead">Conductor: Camilo Restrepo · Chevrolet Spark 2022</p>
+    <div class="form-card">
+      <div class="form-row">
+        <div class="field"><label>Fecha de llegada</label><div class="box">14 ago 2026</div></div>
+        <div class="field"><label>Fecha de salida</label><div class="box">19 ago 2026</div></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Pasajeros</label><div class="box">2 personas</div></div>
+        <div class="field"><label>Trayectos estimados</label><div class="box">6 trayectos</div></div>
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Horarios en que necesitas disponibilidad</label>
+        <div class="box">Mañanas y noches (7–10am, 6–10pm)</div>
+        <div class="hint">Podrás ajustar horarios y actividades directamente con tu conductor por WhatsApp.</div>
+      </div>
+
+      <div class="estimate">
+        <div>
+          <div class="hint" style="color:var(--paper);opacity:.6;margin-bottom:4px;">Costo aproximado del servicio</div>
+          <div class="amt">$425.000 COP</div>
+        </div>
+        <div class="note">Este valor es una aproximación según días, gama del vehículo, pasajeros y trayectos. El precio final se define al terminar tu viaje, por si tu plan cambia.</div>
+      </div>
+      <div style="margin-top:26px;text-align:right;">
+        <button class="btn-primary">Confirmar reserva →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PANEL DE CONTROL ============ -->
+<div class="screen" id="dashboard">
+  <div class="wrap">
+    <h2>Panel de control</h2>
+
+    <!-- Sin sesión iniciada -->
+    <div th:unless="${autenticado}">
+      <p class="lead">Inicia sesión para ver los datos de tu cuenta.</p>
+      <button class="btn-primary" data-href="/login">Iniciar sesión</button>
+    </div>
+
+    <!-- Con sesión iniciada -->
+    <div class="dash" th:if="${autenticado}">
+      <div class="dash-side">
+        <div class="dash-avatar" th:text="${inicial}">A</div>
+        <div style="font-weight:700;font-size:16px;" th:text="${nombre}">Nombre</div>
+        <div style="font-size:12.5px;opacity:.6;margin-bottom:16px;" th:text="${rol == 'CONDUCTOR'} ? 'Conductor' : 'Turista'">Turista</div>
+      </div>
+
+      <div>
+        <!-- TURISTA -->
+        <div class="dash-card" th:if="${rol == 'TURISTA'}">
+          <h4>Mis datos</h4>
+          <div class="pf-facts" style="margin-bottom:0;">
+            <div class="fact"><div class="k">Nombre</div><div class="v" th:text="${nombre}">Nombre</div></div>
+            <div class="fact"><div class="k">Correo</div><div class="v" th:text="${correo}">correo</div></div>
+            <div class="fact"><div class="k">Teléfono / WhatsApp</div><div class="v" th:text="${usuario?.telefono} ?: 'Sin registrar'">teléfono</div></div>
+            <div class="fact"><div class="k">Tipo de cuenta</div><div class="v">Turista</div></div>
+          </div>
+        </div>
+
+        <!-- CONDUCTOR -->
+        <th:block th:if="${rol == 'CONDUCTOR'}">
+          <div class="dash-card">
+            <h4>Datos personales</h4>
+            <div class="pf-facts" style="margin-bottom:0;">
+              <div class="fact"><div class="k">Nombre</div><div class="v" th:text="${nombre}">Nombre</div></div>
+              <div class="fact"><div class="k">Correo</div><div class="v" th:text="${correo}">correo</div></div>
+              <div class="fact"><div class="k">Teléfono / WhatsApp</div><div class="v" th:text="${conductor?.telefono} ?: 'Sin registrar'">teléfono</div></div>
+              <div class="fact"><div class="k">Edad</div><div class="v" th:text="${conductor?.edad}">30</div></div>
+              <div class="fact"><div class="k">Estado de tu solicitud</div><div class="v" th:text="${conductor?.estado == 'APROBADO'} ? 'Aprobado' : (${conductor?.estado == 'RECHAZADO'} ? 'Rechazado' : 'Pendiente de verificación')">Pendiente</div></div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <h4>Licencia de conducción</h4>
+            <div class="pf-facts" style="margin-bottom:0;">
+              <div class="fact"><div class="k">Número de licencia</div><div class="v" th:text="${conductor?.numeroLicencia}">123456</div></div>
+              <div class="fact"><div class="k">Fecha de expedición</div><div class="v" th:text="${conductor?.fechaExpedicionLicencia}">2020-01-01</div></div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <h4>Vehículo</h4>
+            <div class="pf-facts" style="margin-bottom:0;">
+              <div class="fact"><div class="k">Placa</div><div class="v" th:text="${conductor?.placaVehiculo}">ABC123</div></div>
+              <div class="fact"><div class="k">Pasajeros</div><div class="v" th:text="${conductor?.asientosVehiculo} + ' puestos'">4 puestos</div></div>
+              <div class="fact"><div class="k">Marca</div><div class="v" th:text="${conductor?.marcaVehiculo} ?: 'Sin dato'">Marca</div></div>
+              <div class="fact"><div class="k">Modelo</div><div class="v" th:text="${conductor?.modeloVehiculo} ?: 'Sin dato'">Modelo</div></div>
+              <div class="fact"><div class="k">SOAT vigente hasta</div><div class="v" th:text="${conductor?.fechaVencimientoSoat}">2027-01-01</div></div>
+              <div class="fact"><div class="k">Tecnomecánica hasta</div><div class="v" th:text="${conductor?.fechaVencimientoTecnomecanica}">2027-01-01</div></div>
+            </div>
+          </div>
+        </th:block>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(btn.dataset.href) return; // Buscar y Reserva abren su página real
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// Botones que abren otra página (vehiculos.html, reserva.html, login)
+document.querySelectorAll('[data-href]').forEach(el=>{
+  el.addEventListener('click',()=>{ window.location.href = el.dataset.href; });
+});
+if (location.hash === '#dashboard') {
+  document.querySelector('.tab[data-target="dashboard"]').click();
+}
+</script>
+</body>
+</html>
