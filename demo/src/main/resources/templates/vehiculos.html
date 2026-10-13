@@ -9,7 +9,8 @@
     main{max-width:960px;margin:0 auto}
     h1{margin-top:0;font-size:1.4rem;color:#132D46}
     .filtros{background:#132D46;color:#ffffff;border-radius:12px;padding:20px;display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px}
-    @media(min-width:600px){.filtros{grid-template-columns:1fr 1fr auto;align-items:end}}
+    @media(min-width:600px){.filtros{grid-template-columns:1fr 1fr;align-items:end}}
+    @media(min-width:900px){.filtros{grid-template-columns:1fr 1fr 1fr 1fr auto}}
     label{display:block;margin-bottom:4px;font-size:.9rem}
     input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
     button{padding:11px 20px;border:0;border-radius:8px;background:#01C38E;color:#132D46;font-size:1rem;font-weight:700;cursor:pointer}
@@ -23,7 +24,10 @@
     dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
     dt:first-child{margin-top:0}
     dd{margin:2px 0 0}
-    .msg{padding:14px;border-radius:8px;background:#ffffff;color:#132D46}
+    .msg{padding:14px;border-radius:8px;background:#ffffff;color:#132D46;margin:0 0 16px}
+    .msg p{margin:0}
+    .error{background:#fde8e8;color:#9b1c1c}
+    .ok{background:#e6f4ea;color:#1e6b34}
     a{color:#132D46}
     .reservar{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#132D46;color:#ffffff;text-align:center;font-weight:600;text-decoration:none}
   </style>
@@ -48,11 +52,27 @@
       <input type="number" id="asientos" name="asientos" min="1" max="20" placeholder="Ej. 5"
              th:value="${asientosElegidos}">
     </div>
+    <!-- Sprint 3: fechas de la reserva. Si se dejan vacías se busca sin fechas -->
+    <div>
+      <label for="desde">Desde</label>
+      <input type="date" id="desde" name="desde" th:min="${hoy}" th:value="${desde}">
+    </div>
+    <div>
+      <label for="hasta">Hasta</label>
+      <input type="date" id="hasta" name="hasta" th:min="${hoy}" th:value="${hasta}">
+    </div>
     <button type="submit">Buscar</button>
   </form>
 
  
-  <p class="msg" th:if="${#lists.isEmpty(resultados)}">
+  <div class="msg error" th:if="${!#lists.isEmpty(erroresFechas)}">
+    <p th:each="e : ${erroresFechas}" th:text="${e}">Error</p>
+  </div>
+
+  <p class="msg ok" th:if="${desde != null and hasta != null and #lists.isEmpty(erroresFechas) and !#lists.isEmpty(resultados)}"
+     th:text="'Conductores disponibles del ' + ${desde} + ' al ' + ${hasta} + '.'">Conductores disponibles</p>
+
+  <p class="msg" th:if="${#lists.isEmpty(erroresFechas) and #lists.isEmpty(resultados)}">
     No encontramos vehículos disponibles con esos filtros. Prueba con otra gama o con menos pasajeros.
   </p>
 
@@ -68,8 +88,8 @@
         <dt>Conductor</dt><dd th:text="${r.conductor.nombre}">Nombre</dd>
         <dt>Placa</dt><dd th:text="${r.conductor.placaVehiculo}">ABC123</dd>
       </dl>
-     
-      <a class="reservar" th:href="@{/reservas/nueva(vehiculoId=${r.vehiculo.id})}">Reservar</a>
+
+      <a class="reservar" th:href="@{/reservas/nueva(vehiculoId=${r.vehiculo.id},fechaInicio=${desde},fechaFin=${hasta})}">Reservar</a>
     </article>
   </div>
 

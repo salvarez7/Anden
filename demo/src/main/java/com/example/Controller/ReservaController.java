@@ -7,6 +7,7 @@ import com.example.Repository.UsuarioRepository;
 import com.example.Repository.VehiculoRepository;
 import com.example.Service.VehiculoService;
 import com.example.Service.WhatsAppEnlace;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +40,17 @@ public class ReservaController {
         this.vehiculoService = vehiculoService;
     }
 
-   
+
     @GetMapping("/reservas/nueva")
-    public String mostrarFormulario(@RequestParam String vehiculoId, Model model) {
+    public String mostrarFormulario(@RequestParam String vehiculoId,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+                                    Model model) {
         FormularioReserva formulario = new FormularioReserva();
         formulario.setVehiculoId(vehiculoId);
-        return preparar(formulario, new ArrayList<>(), false, null, model);
-    }
+        formulario.setFechaInicio(fechaInicio);
+        formulario.setFechaFin(fechaFin);
+        return preparar(formulario, new ArrayList<>(), false, null, model); }
 
    
     @PostMapping("/reservas/nueva")
