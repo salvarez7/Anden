@@ -14,6 +14,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.Model.PeriodoOcupado;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,5 +77,42 @@ class BusquedaControllerTest {
     void sinIniciarSesionLoMandaAlLogin() throws Exception {
         mvc.perform(get("/vehiculos"))
                 .andExpect(status().is3xxRedirection());
+    }
+
+    // Sprint 3: con fechas solo salen los carros libres en esas fechas
+    @Test
+    void conFechasSoloMuestraLosConductoresLibres() throws Exception {
+        LocalDate desde = LocalDate.now().plusDays(10);
+        LocalDate hasta = desde.plusDays(2);
+        for (String correo : List.of("libre@correo.com", "ocupado@correo.com")) {
+            Conductor c = new Conductor();
+            c.setCorreo(correo);
+            c.setNombre(correo.startsWith("libre") ? "Laura Libre" : "Oscar Ocupado");
+            c.setEstado("APROBADO");
+            when(conductorRepository.findByCorreo(correo)).thenReturn(Optional.of(c));
+        }
+        Vehiculo libre = new Vehiculo("libre@correo.com", "Kia Picanto", "economica", 4);
+        Vehiculo ocupado = new Vehiculo("ocupado@correo.com", "Mazda CX-5", "estandar", 5);
+        ocupado.getPeriodosOcupados().add(new PeriodoOcupado(desde.plusDays(1), hasta.plusDays(3)));
+        when(vehiculoRepository.findByNumeroAsientosGreaterThanEqual(1)).thenReturn(List.of(libre, ocupado));
+
+        mvc.perform(get("/vehiculos").param("desde", desde.toString()).param("hasta", hasta.toString())
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Laura Libre")))
+                .andExpect(content().string(not(containsString("Oscar Ocupado"))))
+                .andExpect(content().string(containsString("Conductores disponibles del " + desde)));
+    }
+
+    @Test
+    void fechasAlRevesMuestranErrorYNoBusca() throws Exception {
+        LocalDate desde = LocalDate.now().plusDays(10);
+
+        mvc.perform(get("/vehiculos").param("desde", desde.toString())
+                        .param("hasta", desde.minusDays(3).toString())
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("La fecha final debe ser igual o posterior")))
+                .andExpect(content().string(not(containsString("No encontramos vehículos"))));
     }
 }

@@ -7,6 +7,7 @@ import com.example.Repository.ConductorRepository;
 import com.example.Repository.VehiculoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,11 +19,15 @@ public class CatalogoVehiculosService {
 
     private final VehiculoRepository vehiculoRepository;
     private final ConductorRepository conductorRepository;
+    // Sprint 3: se usa para saber si un carro está libre en unas fechas (lo hizo Nikol)
+    private final VehiculoService vehiculoService;
 
     public CatalogoVehiculosService(VehiculoRepository vehiculoRepository,
-                                    ConductorRepository conductorRepository) {
+                                    ConductorRepository conductorRepository,
+                                    VehiculoService vehiculoService) {
         this.vehiculoRepository = vehiculoRepository;
         this.conductorRepository = conductorRepository;
+        this.vehiculoService = vehiculoService;
     }
 
     // se guarda el carro que el conductor puso
@@ -45,6 +50,34 @@ public class CatalogoVehiculosService {
 
     // aca filtro por gama y asinetos
     public List<ResultadoBusqueda> buscar(String gama, Integer asientosMinimos) {
+        return buscar(gama, asientosMinimos, null, null);
+    }
+
+
+    public List<ResultadoBusqueda> conductoresDisponibles(LocalDate inicio, LocalDate fin) {
+        return buscar(null, null, inicio, fin);
+    }
+
+    // Valida fechas
+    public List<String> validarFechas(LocalDate inicio, LocalDate fin) {
+        List<String> errores = new ArrayList<>();
+        if (inicio == null && fin == null) {
+            return errores; // no eligió fechas: se busca sin ellas
+        }
+        if (inicio == null || fin == null) {
+            errores.add("Elige las dos fechas: desde y hasta.");
+        } else if (inicio.isBefore(LocalDate.now())) {
+            errores.add("La fecha de inicio no puede estar en el pasado.");
+        } else if (fin.isBefore(inicio)) {
+            errores.add("La fecha final debe ser igual o posterior a la de inicio.");
+        }
+        return errores;
+    }
+
+    // Filtrado
+    public List<ResultadoBusqueda> buscar(String gama, Integer asientosMinimos,
+                                          LocalDate inicio, LocalDate fin) {
+        boolean conFechas = inicio != null && fin != null;
         int minimo = (asientosMinimos == null || asientosMinimos < 1) ? 1 : asientosMinimos;
         Gama gamaElegida = Gama.desde(gama);
 
@@ -60,6 +93,10 @@ public class CatalogoVehiculosService {
         List<ResultadoBusqueda> resultados = new ArrayList<>();
         for (Vehiculo vehiculo : vehiculos) {
             if (!vehiculo.isDisponible()) {
+                continue;
+            }
+            // Sprint 3: si eligió fechas, el carro no puede tener otra reserva que se cruce
+            if (conFechas && !vehiculoService.estaLibre(vehiculo, inicio, fin)) {
                 continue;
             }
             Optional<Conductor> conductor = conductorRepository.findByCorreo(vehiculo.getCorreoConductor());

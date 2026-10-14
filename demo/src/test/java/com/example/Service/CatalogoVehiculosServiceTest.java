@@ -7,6 +7,9 @@ import com.example.Repository.ConductorRepository;
 import com.example.Repository.VehiculoRepository;
 import org.junit.jupiter.api.Test;
 
+import com.example.Model.PeriodoOcupado;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +25,8 @@ class CatalogoVehiculosServiceTest {
     private final VehiculoRepository vehiculoRepository = mock(VehiculoRepository.class);
     private final ConductorRepository conductorRepository = mock(ConductorRepository.class);
     private final CatalogoVehiculosService servicio =
-            new CatalogoVehiculosService(vehiculoRepository, conductorRepository);
+            new CatalogoVehiculosService(vehiculoRepository, conductorRepository,
+                    new VehiculoService(vehiculoRepository));
 
     private Vehiculo vehiculo(String correo, String gama, int asientos) {
         return new Vehiculo(correo, "Carro de " + correo, gama, asientos);
@@ -110,5 +114,66 @@ class CatalogoVehiculosServiceTest {
         assertEquals(Gama.ECONOMICA, Gama.desde(" ECONOMICA "));
         assertEquals(null, Gama.desde("van"));
         assertEquals(null, Gama.desde(null));
+    }
+
+    // ---------- Sprint 3: fechas ----------
+
+    private final LocalDate inicio = LocalDate.now().plusDays(10);
+    private final LocalDate fin = inicio.plusDays(2);
+
+    private Vehiculo ocupadoEntre(String correo, LocalDate desde, LocalDate hasta) {
+        Vehiculo v = vehiculo(correo, "estandar", 4);
+        v.getPeriodosOcupados().add(new PeriodoOcupado(desde, hasta));
+        return v;
+    }
+
+    @Test
+    void conductoresDisponiblesQuitaLosQueTienenReservaQueSeCruza() {
+        conductorCon("libre@x.com", "APROBADO");
+        conductorCon("cruza@x.com", "APROBADO");
+        conductorCon("antes@x.com", "APROBADO");
+        when(vehiculoRepository.findByNumeroAsientosGreaterThanEqual(1)).thenReturn(List.of(
+                vehiculo("libre@x.com", "economica", 4),
+                ocupadoEntre("cruza@x.com", fin, fin.plusDays(5)),             // el último día choca
+                ocupadoEntre("antes@x.com", inicio.minusDays(5), inicio.minusDays(1)))); // termina justo antes
+
+        List<ResultadoBusqueda> r = servicio.conductoresDisponibles(inicio, fin);
+
+        assertEquals(2, r.size());
+        assertTrue(r.stream().noneMatch(x -> x.conductor().getCorreo().equals("cruza@x.com")));
+    }
+
+    @Test
+    void sinFechasNoMiraLasReservas() {
+        conductorCon("cruza@x.com", "APROBADO");
+        when(vehiculoRepository.findByNumeroAsientosGreaterThanEqual(1))
+                .thenReturn(List.of(ocupadoEntre("cruza@x.com", inicio, fin)));
+
+        assertEquals(1, servicio.buscar(null, null, null, null).size());
+    }
+
+    @Test
+    void conductorNoAprobadoNoSaleAunqueEsteLibre() {
+        conductorCon("nuevo@x.com", "PENDIENTE_VERIFICACION");
+        when(vehiculoRepository.findByNumeroAsientosGreaterThanEqual(1))
+                .thenReturn(List.of(vehiculo("nuevo@x.com", "economica", 4)));
+
+        assertTrue(servicio.conductoresDisponibles(inicio, fin).isEmpty());
+    }
+
+    @Test
+    void validarFechasAceptaFechasBienOVacias() {
+        assertTrue(servicio.validarFechas(inicio, fin).isEmpty());
+        assertTrue(servicio.validarFechas(inicio, inicio).isEmpty()); // un solo día también vale
+        assertTrue(servicio.validarFechas(null, null).isEmpty());
+    }
+
+    @Test
+    void validarFechasRechazaFechasMalas() {
+        assertEquals(List.of("Elige las dos fechas: desde y hasta."), servicio.validarFechas(inicio, null));
+        assertEquals(List.of("La fecha de inicio no puede estar en el pasado."),
+                servicio.validarFechas(LocalDate.now().minusDays(1), fin));
+        assertEquals(List.of("La fecha final debe ser igual o posterior a la de inicio."),
+                servicio.validarFechas(fin, inicio));
     }
 }
