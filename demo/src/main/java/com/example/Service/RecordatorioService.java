@@ -23,7 +23,6 @@ public class RecordatorioService {
 
     private static final Logger log = LoggerFactory.getLogger(RecordatorioService.class);
     private static final ZoneId COLOMBIA = ZoneId.of("America/Bogota");
-    static final int DIAS_ANTES = 3;
 
     private final VehiculoRepository vehiculoRepository;
     private final ConductorRepository conductorRepository;
@@ -37,19 +36,32 @@ public class RecordatorioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+
     @Scheduled(cron = "0 0 8 * * *", zone = "America/Bogota")
     public void enviarRecordatoriosDeHoy() {
-        List<Recordatorio> recordatorios = recordatoriosPara(LocalDate.now(COLOMBIA));
-        for (Recordatorio r : recordatorios) {
-            log.info("Recordatorio para {} {} ({}): {} | WhatsApp: {}",
-                    r.paraQuien(), r.nombre(), r.correo(), r.mensaje(), r.enlaceWhatsApp());
+        LocalDate hoy = LocalDate.now(COLOMBIA);
+        int total = 0;
+
+        for (TipoNotificacion tipo : TipoNotificacion.values()) {
+            List<Recordatorio> recordatorios = recordatoriosPara(hoy, tipo);
+            for (Recordatorio r : recordatorios) {
+                log.info("{} para {} {} ({}): {} | WhatsApp: {}",
+                        r.tipo(), r.paraQuien(), r.nombre(), r.correo(), r.mensaje(), r.enlaceWhatsApp());
+            }
+            total += recordatorios.size();
         }
-        log.info("Recordatorios de reservas enviados hoy: {}", recordatorios.size());
+        log.info("Notificaciones de reservas enviadas hoy: {}", total);
     }
 
-    // Arma los recordatorios de las reservas que son 3 días después de hoy
+    // Avisos de confirmación del servicio (3 días antes)
     public List<Recordatorio> recordatoriosPara(LocalDate hoy) {
-        LocalDate diaDeLaReserva = hoy.plusDays(DIAS_ANTES);
+        return recordatoriosPara(hoy, TipoNotificacion.CONFIRMACION);
+    }
+
+    // Arma los avisos de las reservas que empiezan dentro de "tipo.getDiasAntes()" días
+    public List<Recordatorio> recordatoriosPara(LocalDate hoy, TipoNotificacion tipo) {
+        LocalDate diaDeLaReserva = hoy.plusDays(tipo.getDiasAntes());
+        boolean esCancelacion = tipo == TipoNotificacion.CANCELACION;
         List<Recordatorio> recordatorios = new ArrayList<>();
 
         for (Vehiculo vehiculo : vehiculoRepository.findAll()) {
@@ -62,9 +74,11 @@ public class RecordatorioService {
                 Optional<Conductor> conductor = conductorRepository.findByCorreo(vehiculo.getCorreoConductor());
                 if (conductor.isPresent()) {
                     Conductor c = conductor.get();
-                    String mensaje = mensajeParaConductor(c.getNombre(), vehiculo, periodo);
+                    String mensaje = esCancelacion
+                            ? mensajeCancelacionConductor(c.getNombre(), vehiculo, periodo)
+                            : mensajeParaConductor(c.getNombre(), vehiculo, periodo);
                     recordatorios.add(new Recordatorio("CONDUCTOR", c.getNombre(), c.getCorreo(), vehiculo, periodo,
-                            mensaje, WhatsAppEnlace.crear(c.getTelefono(), mensaje)));
+                            mensaje, WhatsAppEnlace.crear(c.getTelefono(), mensaje), tipo));
                 }
 
                 // Al turista
@@ -73,9 +87,11 @@ public class RecordatorioService {
                     if (turista.isPresent()) {
                         Usuario t = turista.get();
                         String nombreConductor = conductor.map(Conductor::getNombre).orElse(null);
-                        String mensaje = mensajeParaTurista(t.getNombre(), nombreConductor, vehiculo, periodo);
+                        String mensaje = esCancelacion
+                                ? mensajeCancelacionTurista(t.getNombre(), nombreConductor, vehiculo, periodo)
+                                : mensajeParaTurista(t.getNombre(), nombreConductor, vehiculo, periodo);
                         recordatorios.add(new Recordatorio("TURISTA", t.getNombre(), t.getCorreo(), vehiculo, periodo,
-                                mensaje, WhatsAppEnlace.crear(t.getTelefono(), mensaje)));
+                                mensaje, WhatsAppEnlace.crear(t.getTelefono(), mensaje), tipo));
                     }
                 }
             }
@@ -83,8 +99,11 @@ public class RecordatorioService {
         return recordatorios;
     }
 
+    // ---- Confirmación del servicio (3 días antes) ----
+
     static String mensajeParaConductor(String nombreConductor, Vehiculo vehiculo, PeriodoOcupado periodo) {
-        return "Hola" + nombreCorto(nombreConductor) + ", te recordamos que en " + DIAS_ANTES
+        return "Hola" + nombreCorto(nombreConductor) + ", te recordamos que en "
+                + TipoNotificacion.CONFIRMACION.getDiasAntes()
                 + " días tienes un servicio con Andén en el vehículo " + vehiculo.getModelo()
                 + ", del " + periodo.getFechaInicio() + " al " + periodo.getFechaFin() + ".";
     }
@@ -92,9 +111,26 @@ public class RecordatorioService {
     static String mensajeParaTurista(String nombreTurista, String nombreConductor,
                                      Vehiculo vehiculo, PeriodoOcupado periodo) {
         String conQuien = nombreConductor == null ? "" : " con " + nombreConductor.trim();
-        return "Hola" + nombreCorto(nombreTurista) + ", te recordamos que en " + DIAS_ANTES
+        return "Hola" + nombreCorto(nombreTurista) + ", te recordamos que en "
+                + TipoNotificacion.CONFIRMACION.getDiasAntes()
                 + " días es tu reserva en Andén" + conQuien + " (vehículo " + vehiculo.getModelo()
                 + "), del " + periodo.getFechaInicio() + " al " + periodo.getFechaFin() + ".";
+    }
+
+    // ---- Recordatorio de cancelación (2 semanas antes) ----
+
+    static String mensajeCancelacionConductor(String nombreConductor, Vehiculo vehiculo, PeriodoOcupado periodo) {
+        return "Hola" + nombreCorto(nombreConductor) + ", faltan 2 semanas para tu servicio con Andén en el vehículo "
+                + vehiculo.getModelo() + ", del " + periodo.getFechaInicio() + " al " + periodo.getFechaFin()
+                + ". Si no vas a poder cumplirlo, este es el momento de cancelar.";
+    }
+
+    static String mensajeCancelacionTurista(String nombreTurista, String nombreConductor,
+                                            Vehiculo vehiculo, PeriodoOcupado periodo) {
+        String conQuien = nombreConductor == null ? "" : " con " + nombreConductor.trim();
+        return "Hola" + nombreCorto(nombreTurista) + ", faltan 2 semanas para tu reserva en Andén" + conQuien
+                + " (vehículo " + vehiculo.getModelo() + "), del " + periodo.getFechaInicio() + " al "
+                + periodo.getFechaFin() + ". Si necesitas cancelar, este es el momento de hacerlo.";
     }
 
     private static String nombreCorto(String nombre) {
