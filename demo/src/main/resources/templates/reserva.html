@@ -9,7 +9,8 @@
     .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:520px;box-sizing:border-box}
     h1{margin-top:0;font-size:1.4rem;color:#132D46}
     label{display:block;margin:14px 0 4px;font-size:.9rem}
-    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
+    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
+    textarea{resize:vertical}
     button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
     dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0 0 8px}
     dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
@@ -19,6 +20,7 @@
     .error{background:#fde8e8;color:#9b1c1c}
     .error ul{margin:0;padding-left:18px}
     .ok{background:#e6f4ea;color:#1e6b34}
+    .ayuda{font-size:.8rem;color:#132D46;opacity:.75;margin-top:4px}
     .boton{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#ffffff;color:#132D46;text-align:center;font-weight:600;text-decoration:none}
     p.link{text-align:center;font-size:.9rem}
     a{color:#132D46}
@@ -42,6 +44,77 @@
     @media(max-width:640px){body{padding-top:170px;}}
   </style>
 </head>
+<body>
+<div class="chrome">
+  <div class="chrome-top">
+    <div class="chrome-brand">Andén<span>.</span></div>
+    <div class="chrome-label">Prototipo · mockup visual estático</div>
+  </div>
+  <div class="tabs">
+    <a class="tab" href="/"><span class="dot"></span>Inicio</a>
+    <a class="tab" href="/vehiculos"><span class="dot"></span>Buscar</a>
+    <a class="tab" href="/reserva"><span class="dot"></span>Reserva</a>
+    <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
+  </div>
+</div>
+<div class="card">
+  <h1>Reserva tu viaje</h1>
+
+  <dl>
+    <dt>Vehículo</dt><dd th:text="${vehiculo.modelo}">Renault Duster</dd>
+    <dt>Capacidad</dt><dd th:text="${vehiculo.numeroAsientos} + ' puestos'">4 puestos</dd>
+    <dt th:if="${conductor != null}">Conductor</dt>
+    <dd th:if="${conductor != null}" th:text="${conductor.nombre}">Nombre</dd>
+  </dl>
+
+  <div class="msg error" th:if="${!#lists.isEmpty(errores)}">
+    <ul>
+      <li th:each="e : ${errores}" th:text="${e}">Error</li>
+    </ul>
+  </div>
+
+  <div class="msg ok" th:if="${fechasValidas}">
+    ¡Fechas disponibles! Ya puedes hablar con tu conductor para cuadrar los planes.
+  </div>
+
+  <form th:action="@{/reservas/nueva}" th:object="${formulario}" method="post">
+    <input type="hidden" th:field="*{vehiculoId}">
+
+    <label for="fechaInicio">Fecha de inicio</label>
+    <input type="date" th:field="*{fechaInicio}" th:min="${hoy}" required>
+
+    <label for="fechaFin">Fecha de fin</label>
+    <input type="date" th:field="*{fechaFin}" th:min="${hoy}" required>
+
+    <label for="pasajeros">Número de pasajeros</label>
+    <input type="number" th:field="*{pasajeros}" min="1" th:max="${vehiculo.numeroAsientos}" placeholder="Ej. 3" required>
+
+    <label for="trayectos">Trayectos que quieres hacer</label>
+    <textarea th:field="*{trayectos}" rows="3" maxlength="300" placeholder="Ej. Aeropuerto → El Poblado; Medellín → Guatapé" required></textarea>
+    <div class="ayuda">Máximo 300 caracteres.</div>
+
+    <button type="submit">Verificar fechas</button>
+  </form>
+
+  <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
+     target="_blank" rel="noopener">Contactar por WhatsApp</a>
+
+  <p class="link"><a th:href="@{/vehiculos}">Volver a la búsqueda</a></p>
+</div>
+
+<script>
+  // La fecha de fin no puede ser anterior a la de inicio
+  (function () {
+    var inicio = document.getElementById('fechaInicio');
+    var fin = document.getElementById('fechaFin');
+    if (!inicio || !fin) return;
+    function ajustar() { if (inicio.value) { fin.min = inicio.value; } }
+    inicio.addEventListener('change', ajustar);
+    ajustar();
+  })();
+</script>
+</body>
+</html>
 <body>
 <div class="chrome">
   <div class="chrome-top">

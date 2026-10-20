@@ -83,18 +83,7 @@ class ReservaControllerTest {
                 .andExpect(redirectedUrl("/vehiculos"));
     }
 
-    @Test
-    void conFechasLibresMuestraElEnlaceDeWhatsApp() throws Exception {
-        LocalDate inicio = LocalDate.now().plusDays(10);
-        mvc.perform(post("/reservas/nueva").with(csrf())
-                        .param("vehiculoId", "v1")
-                        .param("fechaInicio", inicio.toString())
-                        .param("fechaFin", inicio.plusDays(3).toString())
-                        .with(user("ana@correo.com").roles("TURISTA")))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Fechas disponibles")))
-                .andExpect(content().string(containsString("https://wa.me/573001234567")));
-    }
+
 
     @Test
     void fechaFinAnteriorAInicioMuestraError() throws Exception {
@@ -137,5 +126,47 @@ class ReservaControllerTest {
     void sinIniciarSesionLoMandaAlLogin() throws Exception {
         mvc.perform(get("/reservas/nueva").param("vehiculoId", "v1"))
                 .andExpect(status().is3xxRedirection());
+    }
+    @Test
+    void conFechasLibresMuestraElEnlaceDeWhatsApp() throws Exception {
+        LocalDate inicio = LocalDate.now().plusDays(10);
+        mvc.perform(post("/reservas/nueva").with(csrf())
+                        .param("vehiculoId", "v1")
+                        .param("fechaInicio", inicio.toString())
+                        .param("fechaFin", inicio.plusDays(3).toString())
+                        .param("pasajeros", "3")
+                        .param("trayectos", "Aeropuerto a hotel")
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Fechas disponibles")))
+                .andExpect(content().string(containsString("https://wa.me/573001234567")));
+    }
+
+    @Test
+    void masPasajerosQueLosPuestosDelVehiculoMuestraError() throws Exception {
+        LocalDate inicio = LocalDate.now().plusDays(10);
+        mvc.perform(post("/reservas/nueva").with(csrf())
+                        .param("vehiculoId", "v1")
+                        .param("fechaInicio", inicio.toString())
+                        .param("fechaFin", inicio.plusDays(3).toString())
+                        .param("pasajeros", "9")
+                        .param("trayectos", "Aeropuerto a hotel")
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(content().string(containsString("capacidad para 5 pasajeros")))
+                .andExpect(content().string(not(containsString("wa.me"))));
+    }
+
+    @Test
+    void sinTrayectosMuestraError() throws Exception {
+        LocalDate inicio = LocalDate.now().plusDays(10);
+        mvc.perform(post("/reservas/nueva").with(csrf())
+                        .param("vehiculoId", "v1")
+                        .param("fechaInicio", inicio.toString())
+                        .param("fechaFin", inicio.plusDays(3).toString())
+                        .param("pasajeros", "2")
+                        .param("trayectos", "   ")
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(content().string(containsString("trayectos que quieres hacer")))
+                .andExpect(content().string(not(containsString("wa.me"))));
     }
 }
