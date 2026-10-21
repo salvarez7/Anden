@@ -96,6 +96,14 @@
     <button type="submit">Verificar fechas</button>
   </form>
 
+  <form th:if="${fechasValidas}" th:action="@{/reservas/confirmar}" method="post">
+    <input type="hidden" name="vehiculoId" th:value="${formulario.vehiculoId}">
+    <input type="hidden" name="fechaInicio" th:value="${formulario.fechaInicio}">
+    <input type="hidden" name="fechaFin" th:value="${formulario.fechaFin}">
+    <input type="hidden" name="pasajeros" th:value="${formulario.pasajeros}">
+    <input type="hidden" name="trayectos" th:value="${formulario.trayectos}">
+    <button type="submit">Confirmar reserva</button>
+  </form>
   <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
      target="_blank" rel="noopener">Contactar por WhatsApp</a>
 
@@ -103,7 +111,7 @@
 </div>
 
 <script>
-  // La fecha de fin no puede ser anterior a la de inicio
+  
   (function () {
     var inicio = document.getElementById('fechaInicio');
     var fin = document.getElementById('fechaFin');
@@ -113,60 +121,5 @@
     ajustar();
   })();
 </script>
-</body>
-</html>
-<body>
-<div class="chrome">
-  <div class="chrome-top">
-    <div class="chrome-brand">Andén<span>.</span></div>
-    <div class="chrome-label">Prototipo · mockup visual estático</div>
-  </div>
-  <div class="tabs">
-    <a class="tab" href="/"><span class="dot"></span>Inicio</a>
-    <a class="tab" href="/vehiculos"><span class="dot"></span>Buscar</a>
-    <a class="tab" href="/reserva"><span class="dot"></span>Reserva</a>
-    <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
-  </div>
-</div>
-<div class="card">
-  <h1>Reserva tu viaje</h1>
-
-  
-  <dl>
-    <dt>Vehículo</dt><dd th:text="${vehiculo.modelo}">Renault Duster</dd>
-    <dt>Pasajeros</dt><dd th:text="${vehiculo.numeroAsientos} + ' puestos'">4 puestos</dd>
-    <dt th:if="${conductor != null}">Conductor</dt>
-    <dd th:if="${conductor != null}" th:text="${conductor.nombre}">Nombre</dd>
-  </dl>
-
-  <div class="msg error" th:if="${!#lists.isEmpty(errores)}">
-    <ul>
-      <li th:each="e : ${errores}" th:text="${e}">Error</li>
-    </ul>
-  </div>
-
-  <div class="msg ok" th:if="${fechasValidas}">
-    ¡Fechas disponibles! Ya puedes hablar con tu conductor para cuadrar los planes.
-  </div>
-
-  
-  <form th:action="@{/reservas/nueva}" th:object="${formulario}" method="post">
-    <input type="hidden" th:field="*{vehiculoId}">
-
-    <label for="fechaInicio">Fecha de inicio</label>
-    <input type="date" th:field="*{fechaInicio}" th:min="${hoy}" required>
-
-    <label for="fechaFin">Fecha de fin</label>
-    <input type="date" th:field="*{fechaFin}" th:min="${hoy}" required>
-
-    <button type="submit">Verificar fechas</button>
-  </form>
-
-  
-  <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
-     target="_blank" rel="noopener">Contactar por WhatsApp</a>
-
-  <p class="link"><a th:href="@{/vehiculos}">Volver a la búsqueda</a></p>
-</div>
 </body>
 </html>
