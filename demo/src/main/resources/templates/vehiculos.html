@@ -116,6 +116,16 @@
         <dt>Pasajeros</dt><dd th:text="${r.vehiculo.numeroAsientos} + ' puestos'">4 puestos</dd>
         <dt>Conductor</dt><dd th:text="${r.conductor.nombre}">Nombre</dd>
         <dt>Placa</dt><dd th:text="${r.conductor.placaVehiculo}">ABC123</dd>
+        <!-- Sprint 4: preferencias que el conductor edita en su perfil (solo si las llenó) -->
+        <th:block th:if="${r.conductor.añosExperiencia != null}">
+          <dt>Experiencia</dt><dd th:text="${r.conductor.añosExperiencia} + ' años'">5 años</dd>
+        </th:block>
+        <th:block th:if="${!#lists.isEmpty(r.conductor.zonas)}">
+          <dt>Zonas</dt><dd th:text="${#strings.listJoin(r.conductor.zonas, ', ')}">El Poblado</dd>
+        </th:block>
+        <th:block th:if="${r.conductor.disponibilidadHoraria != null and !#strings.isEmpty(r.conductor.disponibilidadHoraria)}">
+          <dt>Disponibilidad</dt><dd th:text="${r.conductor.disponibilidadHoraria}">Lunes a sábado</dd>
+        </th:block>
       </dl>
 
       <a class="reservar" th:href="@{/reservas/nueva(vehiculoId=${r.vehiculo.id},fechaInicio=${desde},fechaFin=${hasta})}">Reservar</a>

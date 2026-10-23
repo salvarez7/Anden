@@ -18,7 +18,7 @@ public class FormularioRegistro {
     private Integer edad;
     private String numeroLicencia;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // el <input type="date"> manda "2024-05-31"
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fechaExpedicionLicencia;
     private String placaVehiculo;
     private String marcaVehiculo;

@@ -389,6 +389,12 @@ footer{background:var(--ink);color:var(--paper);padding:26px 24px;text-align:cen
 
         <!-- CONDUCTOR -->
         <th:block th:if="${rol == 'CONDUCTOR'}">
+          <!-- Sprint 4 (Sofía): acceso a editar el perfil público -->
+          <div class="dash-card">
+            <h4>Mi perfil público</h4>
+            <p style="margin:0 0 12px;">Experiencia, zonas, horario y fotos de tu vehículo: es lo que ven los turistas al elegirte.</p>
+            <button class="btn-primary" data-href="/conductor/perfil">Editar mi perfil</button>
+          </div>
           <div class="dash-card">
             <h4>Datos personales</h4>
             <div class="pf-facts" style="margin-bottom:0;">

@@ -1,6 +1,8 @@
 package com.example.Model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,6 +27,10 @@ public class Conductor {
     private LocalDate fechaVencimientoSoat;
     private LocalDate fechaVencimientoTecnomecanica;
     private String estado; // PENDIENTE_VERIFICACION, APROBADO o RECHAZADO
+
+    private Integer añosExperiencia;
+    private List<String> zonas = new ArrayList<>();
+    private String disponibilidadHoraria;
 
     public Conductor() {
     }
@@ -63,6 +69,9 @@ public class Conductor {
     public LocalDate getFechaVencimientoSoat() { return fechaVencimientoSoat; }
     public LocalDate getFechaVencimientoTecnomecanica() { return fechaVencimientoTecnomecanica; }
     public String getEstado() { return estado; }
+    public Integer getAñosExperiencia() { return añosExperiencia; }
+    public List<String> getZonas() { return zonas; }
+    public String getDisponibilidadHoraria() { return disponibilidadHoraria; }
 
     public void setId(String id) { this.id = id; }
     public void setCorreo(String correo) { this.correo = correo; }
@@ -78,4 +87,7 @@ public class Conductor {
     public void setFechaVencimientoSoat(LocalDate f) { this.fechaVencimientoSoat = f; }
     public void setFechaVencimientoTecnomecanica(LocalDate f) { this.fechaVencimientoTecnomecanica = f; }
     public void setEstado(String estado) { this.estado = estado; }
+    public void setAñosExperiencia(Integer añosExperiencia) { this.añosExperiencia = añosExperiencia; }
+    public void setZonas(List<String> zonas) { this.zonas = zonas; }
+    public void setDisponibilidadHoraria(String disponibilidadHoraria) { this.disponibilidadHoraria = disponibilidadHoraria; }
 }

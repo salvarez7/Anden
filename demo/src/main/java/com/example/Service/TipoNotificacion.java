@@ -1,10 +1,9 @@
 package com.example.Service;
 
-// Notificaciones programadas: cuántos días antes del servicio se mandan
 public enum TipoNotificacion {
 
-    CANCELACION(14),   // recordatorio de cancelación: 2 semanas antes
-    CONFIRMACION(3);   // confirmación del servicio: 3 días antes
+    CANCELACION(14),
+    CONFIRMACION(3);
 
     private final int diasAntes;
 

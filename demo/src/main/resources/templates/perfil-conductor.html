@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar mi perfil</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f4f1ec;margin:0;padding:32px 16px;box-sizing:border-box;color:#1A1E29}
+    main{max-width:960px;margin:0 auto}
+    h1{margin-top:0;font-size:1.4rem;color:#132D46}
+    h2{font-size:1.05rem;color:#132D46;margin:0 0 12px}
+    .columnas{display:grid;grid-template-columns:1fr;gap:20px;align-items:start}
+    @media(min-width:800px){.columnas{grid-template-columns:3fr 2fr}}
+    .panel{background:#ffffff;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+    label{display:block;margin:14px 0 4px;font-size:.9rem;font-weight:600;color:#132D46}
+    .ayuda{font-size:.8rem;color:#5a6270;margin:4px 0 0}
+    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
+    textarea{min-height:70px;resize:vertical}
+    button{margin-top:20px;width:100%;padding:12px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;font-weight:700;cursor:pointer}
+    .fotos-actuales{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+    .foto{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.8rem}
+    .foto img{width:110px;height:80px;object-fit:cover;border-radius:8px}
+    .foto input{width:auto}
+    .msg{padding:12px 14px;border-radius:8px;margin:0 0 16px;font-size:.9rem}
+    .msg ul{margin:6px 0 0;padding-left:18px}
+    .error{background:#fde8e8;color:#9b1c1c}
+    .ok{background:#e6f4ea;color:#1e6b34}
+    .aviso{background:#fff4d6;color:#7a5200}
+    .card{background:#01C38E;padding:24px;border-radius:12px}
+    .card h3{margin:0 0 4px;font-size:1.15rem;color:#132D46}
+    .card .fotos{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+    .card .fotos img{height:80px;border-radius:8px;object-fit:cover}
+    dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0}
+    dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
+    dt:first-child{margin-top:0}
+    dd{margin:2px 0 0}
+    a{color:#132D46}
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#132D46;--paper:#FFFFFF;--orange:#01C38E;--line-light:rgba(255,255,255,.28);}
+    body{box-sizing:border-box;padding-top:120px;}
+    .chrome{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--ink);color:var(--paper);padding:14px 24px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:'Work Sans',sans-serif;}
+    .chrome-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+    .chrome-brand{font-family:'Fraunces',serif;font-weight:800;font-size:20px;letter-spacing:.02em;}
+    .chrome-brand span{color:var(--orange);}
+    .chrome-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.55;font-family:'Space Mono',monospace;}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;}
+    .tab{background:transparent;border:1px solid var(--line-light);color:var(--paper);opacity:.7;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.15s;text-decoration:none;}
+    .tab:hover{opacity:1;border-color:var(--paper);}
+    .tab.active{background:var(--orange);border-color:var(--orange);opacity:1;color:var(--ink);font-weight:600;}
+    .dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--orange);}
+    .tab.active .dot{background:var(--ink);}
+    @media(max-width:640px){body{padding-top:170px;}}
+  </style>
+</head>
+<body>
+<div class="chrome">
+  <div class="chrome-top">
+    <div class="chrome-brand">Andén<span>.</span></div>
+    <div class="chrome-label">Prototipo · mockup visual estático</div>
+  </div>
+  <div class="tabs">
+    <a class="tab" href="/"><span class="dot"></span>Inicio</a>
+    <a class="tab" href="/vehiculos"><span class="dot"></span>Buscar</a>
+    <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
+  </div>
+</div>
+<main>
+  <h1>Editar mi perfil</h1>
+
+  <div class="msg ok" th:if="${param.guardado}">¡Listo! Guardamos tus cambios y los turistas ya los ven en tu perfil.</div>
+
+  <!-- H7: el perfil solo está completo con experiencia, zonas, horario y al menos una foto del vehículo -->
+  <div class="msg aviso" th:if="${!#lists.isEmpty(faltan)}">
+    <strong>Tu perfil está incompleto.</strong> Te falta:
+    <ul><li th:each="f : ${faltan}" th:text="${f}">dato</li></ul>
+  </div>
+  <div class="msg ok" th:if="${#lists.isEmpty(faltan)}">Tu perfil está completo.</div>
+
+  <div class="msg error" th:if="${!#lists.isEmpty(errores)}">
+    <ul><li th:each="e : ${errores}" th:text="${e}">Error</li></ul>
+  </div>
+
+  <div class="columnas">
+    <!-- enctype="multipart/form-data" es necesario para poder enviar fotos -->
+    <form class="panel" th:action="@{/conductor/perfil}" th:object="${formulario}" method="post" enctype="multipart/form-data">
+      <h2>Mis preferencias</h2>
+
+      <label for="añosExperiencia">Años de experiencia</label>
+      <input type="number" th:field="*{añosExperiencia}" min="0" max="60" placeholder="Ej. 5" required>
+
+      <label for="zonas">Zonas donde prestas el servicio</label>
+      <input type="text" th:field="*{zonas}" placeholder="Ej. El Poblado, Laureles, Aeropuerto" required>
+      <p class="ayuda">Sepáralas con comas.</p>
+
+      <label for="disponibilidadHoraria">Disponibilidad horaria</label>
+      <textarea th:field="*{disponibilidadHoraria}" maxlength="120" placeholder="Ej. Lunes a sábado, 6:00 a. m. a 8:00 p. m." required></textarea>
+
+      <label>Fotos de tu vehículo</label>
+      <p class="ayuda" th:if="${vehiculo == null or #lists.isEmpty(vehiculo.fotos)}">Todavía no tienes fotos.</p>
+      <div class="fotos-actuales" th:if="${vehiculo != null and !#lists.isEmpty(vehiculo.fotos)}">
+        <label class="foto" th:each="fid : ${vehiculo.fotos}">
+          <img th:src="@{/fotos/{id}(id=${fid})}" alt="Foto del vehículo">
+          <span><input type="checkbox" name="fotosAQuitar" th:value="${fid}"> Quitar</span>
+        </label>
+      </div>
+
+      <label for="fotos">Subir fotos nuevas</label>
+      <input type="file" id="fotos" name="fotos" accept="image/jpeg,image/png,image/webp" multiple>
+      <p class="ayuda">Máximo 3 fotos en total, JPG, PNG o WEBP, de hasta 1,5 MB cada una.</p>
+
+      <button type="submit">Guardar cambios</button>
+    </form>
+
+    <!-- Vista previa: es lo mismo que ven los turistas en la búsqueda, leído de la base de datos -->
+    <section>
+      <h2>Así te ven los turistas</h2>
+      <article class="card">
+        <h3 th:text="${vehiculo?.modelo} ?: 'Tu vehículo'">Renault Duster</h3>
+        <div class="fotos" th:if="${vehiculo != null and !#lists.isEmpty(vehiculo.fotos)}">
+          <img th:each="fid : ${vehiculo.fotos}" th:src="@{/fotos/{id}(id=${fid})}" alt="Foto del vehículo">
+        </div>
+        <dl>
+          <dt>Conductor</dt><dd th:text="${conductor.nombre}">Nombre</dd>
+          <dt>Experiencia</dt>
+          <dd th:text="${conductor.añosExperiencia != null} ? ${conductor.añosExperiencia} + ' años' : 'Sin dato'">5 años</dd>
+          <dt>Zonas</dt>
+          <dd th:text="${#lists.isEmpty(conductor.zonas)} ? 'Sin dato' : ${#strings.listJoin(conductor.zonas, ', ')}">El Poblado</dd>
+          <dt>Disponibilidad</dt><dd th:text="${conductor.disponibilidadHoraria} ?: 'Sin dato'">Lunes a sábado</dd>
+        </dl>
+      </article>
+      <p class="ayuda" th:if="${conductor.estado != 'APROBADO'}">Ojo: los turistas solo te encuentran en la búsqueda cuando tu cuenta esté aprobada.</p>
+    </section>
+  </div>
+
+  <p><a th:href="@{/}">Volver al inicio</a></p>
+</main>
+</body>
+</html>
