@@ -7,8 +7,6 @@ public class PeriodoOcupado {
 
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
-    // Sprint 3 (Sofía): correo del turista que hizo la reserva, para mandarle el recordatorio.
-    // Puede ser null en periodos viejos o bloqueados por el conductor.
     private String correoTurista;
 
     public PeriodoOcupado() {

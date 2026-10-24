@@ -19,7 +19,6 @@ public class CatalogoVehiculosService {
 
     private final VehiculoRepository vehiculoRepository;
     private final ConductorRepository conductorRepository;
-    // Sprint 3: se usa para saber si un carro está libre en unas fechas (lo hizo Nikol)
     private final VehiculoService vehiculoService;
 
     public CatalogoVehiculosService(VehiculoRepository vehiculoRepository,
@@ -95,7 +94,6 @@ public class CatalogoVehiculosService {
             if (!vehiculo.isDisponible()) {
                 continue;
             }
-            // Sprint 3: si eligió fechas, el carro no puede tener otra reserva que se cruce
             if (conFechas && !vehiculoService.estaLibre(vehiculo, inicio, fin)) {
                 continue;
             }
