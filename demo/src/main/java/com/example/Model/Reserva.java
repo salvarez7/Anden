@@ -10,6 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "reservas")
 public class Reserva {
 
+    // Solo las reservas CONFIRMADAS reciben recordatorios (RF-27)
+    public static final String CONFIRMADA = "CONFIRMADA";
+
     @Id
     private String id;
 
@@ -37,7 +40,7 @@ public class Reserva {
         this.fechaFin = fechaFin;
         this.pasajeros = pasajeros;
         this.trayectos = trayectos;
-        this.estado = "CONFIRMADA";
+        this.estado = CONFIRMADA;
         this.fechaCreacion = LocalDateTime.now();
     }
 

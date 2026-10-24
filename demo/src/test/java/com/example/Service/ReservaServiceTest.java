@@ -206,11 +206,14 @@ class ReservaServiceTest {
        
         when(usuarioRepository.findByCorreo("ana@correo.com"))
                 .thenReturn(Optional.of(new Usuario("Ana", "ana@correo.com", "3109876543", "x", "TURISTA")));
-        when(vehiculoRepository.findAll()).thenReturn(List.of(carro));
-        RecordatorioService recordatorios =
-                new RecordatorioService(vehiculoRepository, conductorRepository, usuarioRepository);
+        RecordatorioService recordatorios = new RecordatorioService(
+                reservaRepository, vehiculoRepository, conductorRepository, usuarioRepository);
 
-        servicio.crearReserva(datos(2, inicio, fin));
+        Reserva creada = servicio.crearReserva(datos(2, inicio, fin));
+
+        // La base de datos devolvería la reserva guardada (confirmada) para ese día
+        when(reservaRepository.findByEstadoAndFechaInicio(Reserva.CONFIRMADA, inicio))
+                .thenReturn(List.of(creada));
 
         List<Recordatorio> avisos = recordatorios.recordatoriosPara(inicio.minusDays(3));
         assertTrue(avisos.stream().anyMatch(a -> a.paraQuien().equals("TURISTA")));

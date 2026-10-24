@@ -128,7 +128,8 @@ class ReservaControllerTest {
                 .andExpect(status().is3xxRedirection());
     }
     @Test
-    void conFechasLibresMuestraElEnlaceDeWhatsApp() throws Exception {
+    void conFechasLibresNoMuestraElWhatsAppHastaConfirmar() throws Exception {
+        // RNF02: el número del conductor solo se ve con la reserva confirmada (en el ticket)
         LocalDate inicio = LocalDate.now().plusDays(10);
         mvc.perform(post("/reservas/nueva").with(csrf())
                         .param("vehiculoId", "v1")
@@ -139,7 +140,9 @@ class ReservaControllerTest {
                         .with(user("ana@correo.com").roles("TURISTA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Fechas disponibles")))
-                .andExpect(content().string(containsString("https://wa.me/573001234567")));
+                .andExpect(content().string(containsString("Confirmar reserva")))
+                .andExpect(content().string(not(containsString("wa.me"))))
+                .andExpect(content().string(not(containsString("3001234567"))));
     }
 
     @Test
