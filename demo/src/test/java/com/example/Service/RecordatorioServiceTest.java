@@ -132,4 +132,63 @@ class RecordatorioServiceTest {
         when(vehiculoRepository.findAll()).thenReturn(List.of());
         servicio.enviarRecordatoriosDeHoy();
     }
+
+    // ---- Recordatorio de cancelación (2 semanas antes) ----
+
+    @Test
+    void dosSemanasAntesAvisaLaCancelacionAlConductorYAlTurista() {
+        conductor("3001234567");
+        turista("3115556677");
+        when(vehiculoRepository.findAll()).thenReturn(List.of(vehiculoConReserva(diaReserva, "ana@x.com")));
+
+        List<Recordatorio> r = servicio.recordatoriosPara(diaReserva.minusDays(14), TipoNotificacion.CANCELACION);
+
+        assertEquals(2, r.size());
+        assertEquals("CONDUCTOR", r.get(0).paraQuien());
+        assertEquals(TipoNotificacion.CANCELACION, r.get(0).tipo());
+        assertEquals("TURISTA", r.get(1).paraQuien());
+        assertEquals(TipoNotificacion.CANCELACION, r.get(1).tipo());
+    }
+
+    @Test
+    void laCancelacionNoAvisaReservasDeOtrosDias() {
+        conductor("3001234567");
+        turista("3115556677");
+        when(vehiculoRepository.findAll()).thenReturn(List.of(
+                vehiculoConReserva(diaReserva.minusDays(1), "ana@x.com"),   // faltan 13 días
+                vehiculoConReserva(diaReserva.plusDays(1), "ana@x.com")));  // faltan 15 días
+
+        assertTrue(servicio.recordatoriosPara(diaReserva.minusDays(14), TipoNotificacion.CANCELACION).isEmpty());
+    }
+
+    @Test
+    void cadaTipoAvisaSoloEnSuPropioDia() {
+        conductor("3001234567");
+        turista("3115556677");
+        when(vehiculoRepository.findAll()).thenReturn(List.of(vehiculoConReserva(diaReserva, "ana@x.com")));
+
+        assertEquals(2, servicio.recordatoriosPara(diaReserva.minusDays(3), TipoNotificacion.CONFIRMACION).size());
+        assertTrue(servicio.recordatoriosPara(diaReserva.minusDays(3), TipoNotificacion.CANCELACION).isEmpty());
+        assertEquals(2, servicio.recordatoriosPara(diaReserva.minusDays(14), TipoNotificacion.CANCELACION).size());
+        assertTrue(servicio.recordatoriosPara(diaReserva.minusDays(14), TipoNotificacion.CONFIRMACION).isEmpty());
+    }
+
+    @Test
+    void elMensajeDeCancelacionLlevaLosDatosYElEnlaceDeWhatsApp() {
+        conductor("300 123 4567");
+        turista("311 555 6677");
+        when(vehiculoRepository.findAll()).thenReturn(List.of(vehiculoConReserva(diaReserva, "ana@x.com")));
+
+        List<Recordatorio> r = servicio.recordatoriosPara(diaReserva.minusDays(14), TipoNotificacion.CANCELACION);
+
+        assertEquals("Hola Juan, faltan 2 semanas para tu servicio con Andén en el vehículo Renault Duster, "
+                        + "del 2027-07-21 al 2027-07-23. Si no vas a poder cumplirlo, este es el momento de cancelar.",
+                r.get(0).mensaje());
+        assertTrue(r.get(0).enlaceWhatsApp().startsWith("https://wa.me/573001234567?text=Hola%20Juan"));
+
+        assertEquals("Hola Ana, faltan 2 semanas para tu reserva en Andén con Juan (vehículo Renault Duster), "
+                        + "del 2027-07-21 al 2027-07-23. Si necesitas cancelar, este es el momento de hacerlo.",
+                r.get(1).mensaje());
+        assertTrue(r.get(1).enlaceWhatsApp().startsWith("https://wa.me/573115556677?text=Hola%20Ana"));
+    }
 }
