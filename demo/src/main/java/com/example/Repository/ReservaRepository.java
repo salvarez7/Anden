@@ -15,6 +15,6 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
 
     List<Reserva> findByCorreoTurista(String correoTurista);
 
-    // Para los recordatorios: las reservas de un estado que empiezan ese día
+  
     List<Reserva> findByEstadoAndFechaInicio(String estado, LocalDate fechaInicio);
 }

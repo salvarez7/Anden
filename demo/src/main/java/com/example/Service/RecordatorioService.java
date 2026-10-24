@@ -143,7 +143,7 @@ public class RecordatorioService {
                 + periodo.getFechaFin() + ". Si necesitas cancelar, este es el momento de hacerlo.";
     }
 
-    // Le agrega al mensaje el código del ticket de la reserva (ej: AND-2847)
+ 
     static String conCodigo(String mensaje, String codigo) {
         return codigo == null || codigo.isBlank() ? mensaje : mensaje + " Código de reserva: " + codigo + ".";
     }

@@ -170,8 +170,7 @@ public class ReservaController {
         model.addAttribute("errores", errores);
         model.addAttribute("fechasValidas", fechasValidas);
 
-        // RNF02: el enlace de WhatsApp (con el número del conductor) NO se arma aquí.
-        // Solo aparece en el ticket, cuando la reserva ya está confirmada (verTicket).
+    
         return "reserva";
     }
 

@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "reservas")
 public class Reserva {
 
-    // Solo las reservas CONFIRMADAS reciben recordatorios (RF-27)
+    
     public static final String CONFIRMADA = "CONFIRMADA";
 
     @Id
