@@ -74,7 +74,7 @@
   </div>
 
   <div class="msg ok" th:if="${fechasValidas}">
-    ¡Fechas disponibles! Ya puedes hablar con tu conductor para cuadrar los planes.
+    ¡Fechas disponibles! Confirma tu reserva para ver tu ticket y hablar con tu conductor por WhatsApp.
   </div>
 
   <form th:action="@{/reservas/nueva}" th:object="${formulario}" method="post">
@@ -104,8 +104,6 @@
     <input type="hidden" name="trayectos" th:value="${formulario.trayectos}">
     <button type="submit">Confirmar reserva</button>
   </form>
-  <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
-     target="_blank" rel="noopener">Contactar por WhatsApp</a>
 
   <p class="link"><a th:href="@{/vehiculos}">Volver a la búsqueda</a></p>
 </div>

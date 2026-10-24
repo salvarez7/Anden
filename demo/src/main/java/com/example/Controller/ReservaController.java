@@ -170,14 +170,7 @@ public class ReservaController {
         model.addAttribute("errores", errores);
         model.addAttribute("fechasValidas", fechasValidas);
 
-        
-        if (fechasValidas && conductor.isPresent()) {
-            String mensaje = WhatsAppEnlace.mensajeReserva(nombreTurista, vehiculo.get().getModelo(),
-                    formulario.getFechaInicio(), formulario.getFechaFin(),
-                    formulario.getPasajeros(), formulario.getTrayectos());
-            model.addAttribute("enlaceWhatsApp",
-                    WhatsAppEnlace.crear(conductor.get().getTelefono(), mensaje));
-        }
+    
         return "reserva";
     }
 
