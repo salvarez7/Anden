@@ -386,6 +386,12 @@ footer{background:var(--ink);color:var(--paper);padding:26px 24px;text-align:cen
             <div class="fact"><div class="k">Tipo de cuenta</div><div class="v">Turista</div></div>
           </div>
         </div>
+        <!-- Sprint 5 (Sofía): reservas del turista con el contacto del conductor -->
+        <div class="dash-card" th:if="${rol == 'TURISTA'}">
+          <h4>Mis reservas</h4>
+          <p style="margin:0 0 12px;">Revisa tus reservas y escríbele a tu conductor por WhatsApp para cuadrar planes y horarios.</p>
+          <button class="btn-primary" data-href="/reservas">Ver mis reservas</button>
+        </div>
 
         <!-- CONDUCTOR -->
         <th:block th:if="${rol == 'CONDUCTOR'}">

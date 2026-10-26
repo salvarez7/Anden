@@ -6,6 +6,7 @@ import com.example.Model.Vehiculo;
 import com.example.Repository.ConductorRepository;
 import com.example.Repository.UsuarioRepository;
 import com.example.Repository.VehiculoRepository;
+import com.example.Service.ContactoConductorService;
 import com.example.Service.DatosReserva;
 import com.example.Service.ReservaService;
 import com.example.Service.VehiculoService;
@@ -36,17 +37,20 @@ public class ReservaController {
     private final UsuarioRepository usuarioRepository;
     private final VehiculoService vehiculoService;
     private final ReservaService reservaService;
+    private final ContactoConductorService contactoConductorService;
 
     public ReservaController(VehiculoRepository vehiculoRepository,
                              ConductorRepository conductorRepository,
                              UsuarioRepository usuarioRepository,
                              VehiculoService vehiculoService,
-                             ReservaService reservaService) {
+                             ReservaService reservaService,
+                             ContactoConductorService contactoConductorService) {
         this.vehiculoRepository = vehiculoRepository;
         this.conductorRepository = conductorRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehiculoService = vehiculoService;
         this.reservaService = reservaService;
+        this.contactoConductorService = contactoConductorService;
     }
 
     @GetMapping("/reservas/nueva")
@@ -135,20 +139,12 @@ public class ReservaController {
         Reserva reserva = encontrada.get();
         Optional<Vehiculo> vehiculo = vehiculoRepository.findById(reserva.getVehiculoId());
         Optional<Conductor> conductor = conductorRepository.findByCorreo(reserva.getCorreoConductor());
-        String nombreTurista = usuarioRepository.findByCorreo(principal.getName())
-                .map(u -> u.getNombre()).orElse(null);
 
         model.addAttribute("reserva", reserva);
         model.addAttribute("vehiculo", vehiculo.orElse(null));
         model.addAttribute("conductor", conductor.orElse(null));
-        if (conductor.isPresent()) {
-            String mensaje = WhatsAppEnlace.mensajeReserva(nombreTurista,
-                    vehiculo.map(Vehiculo::getModelo).orElse(null),
-                    reserva.getFechaInicio(), reserva.getFechaFin(),
-                    reserva.getPasajeros(), reserva.getTrayectos());
-            model.addAttribute("enlaceWhatsApp",
-                    WhatsAppEnlace.crear(conductor.get().getTelefono(), mensaje));
-        }
+        // Sprint 5 (Sofía): enlace con el número del conductor y el mensaje de la reserva ya escrito
+        model.addAttribute("enlaceWhatsApp", contactoConductorService.conContacto(reserva).enlaceWhatsApp());
         return "reserva-confirmada";
     }
 

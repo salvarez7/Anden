@@ -73,8 +73,9 @@
     Te enviaremos un recordatorio 3 días antes de iniciar tu viaje.
   </div>
   <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
-     target="_blank" rel="noopener">Hablar con el conductor por WhatsApp</a>
-  <p class="link"><a th:href="@{/vehiculos}">Volver a la búsqueda</a></p>
+     target="_blank" rel="noopener">Contactar por WhatsApp</a>
+  <p class="ayuda" th:if="${enlaceWhatsApp != null}">Se abre WhatsApp con el número de tu conductor y un mensaje con los datos de tu reserva. Puedes cambiarlo antes de enviarlo.</p>
+  <p class="link"><a th:href="@{/reservas}">Ver mis reservas</a> · <a th:href="@{/vehiculos}">Volver a la búsqueda</a></p>
 </div>
 </body>
 </html>
