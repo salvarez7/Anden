@@ -15,6 +15,9 @@ public interface ReservaRepository extends MongoRepository<Reserva, String> {
 
     List<Reserva> findByCorreoTurista(String correoTurista);
 
+    
+    List<Reserva> findByCorreoConductor(String correoConductor);
+
   
     List<Reserva> findByEstadoAndFechaInicio(String estado, LocalDate fechaInicio);
 }

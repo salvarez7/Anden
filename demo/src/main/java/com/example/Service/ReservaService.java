@@ -1,6 +1,7 @@
 package com.example.Service;
 
 import com.example.Model.Conductor;
+import com.example.Model.Gama;
 import com.example.Model.PeriodoOcupado;
 import com.example.Model.Reserva;
 import com.example.Model.Vehiculo;
@@ -10,6 +11,7 @@ import com.example.Repository.VehiculoRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -143,6 +145,58 @@ public class ReservaService {
                 new PeriodoOcupado(datos.fechaInicio(), datos.fechaFin(), datos.correoTurista()));
         vehiculoRepository.save(vehiculo);
 
+        return reserva;
+    }
+
+    // Sprint 6 (H13): el conductor registra el valor final cuando termina el servicio.
+    // Se calcula con los kilómetros y las horas reales. Si ya había uno, se actualiza.
+    public Reserva registrarValorFinal(String codigo, String correoConductor, Integer kilometros, Integer horas) {
+        return registrarValorFinal(codigo, correoConductor, kilometros, horas, LocalDate.now());
+    }
+
+    Reserva registrarValorFinal(String codigo, String correoConductor, Integer kilometros, Integer horas,
+                                LocalDate hoy) {
+        Reserva reserva = reservaRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new IllegalArgumentException("No encontramos esa reserva."));
+        if (correoConductor == null || !correoConductor.equals(reserva.getCorreoConductor())) {
+            throw new IllegalArgumentException("Esta reserva no es de tu vehículo.");
+        }
+        if (!Reserva.CONFIRMADA.equals(reserva.getEstado())) {
+            throw new IllegalArgumentException("Solo se registra el valor final de reservas confirmadas.");
+        }
+        // RF-33: el valor se registra una vez concluido el servicio
+        if (hoy.isBefore(reserva.getFechaFin())) {
+            throw new IllegalArgumentException("El valor final se registra cuando termina el servicio (desde el "
+                    + reserva.getFechaFin() + ").");
+        }
+
+        int dias = CalculadoraTarifa.dias(reserva.getFechaInicio(), reserva.getFechaFin());
+        List<String> errores = new ArrayList<>();
+        String errorKilometros = ValorFinalCalculadora.validarKilometros(kilometros);
+        if (errorKilometros != null) {
+            errores.add(errorKilometros);
+        }
+        String errorHoras = ValorFinalCalculadora.validarHoras(horas, dias);
+        if (errorHoras != null) {
+            errores.add(errorHoras);
+        }
+        if (!errores.isEmpty()) {
+            throw new IllegalArgumentException(String.join("\n", errores));
+        }
+
+        Gama gama = vehiculoRepository.findById(reserva.getVehiculoId())
+                .map(Vehiculo::getGama)
+                .map(Gama::desde)
+                .orElse(null);
+        if (gama == null) {
+            throw new IllegalArgumentException("No pudimos calcular el valor: falta la gama del vehículo.");
+        }
+
+        reserva.setKilometrosReales(kilometros);
+        reserva.setHorasReales(horas);
+        reserva.setValorFinal(ValorFinalCalculadora.calcular(gama, dias, horas, reserva.getPasajeros(), kilometros));
+        reserva.setFechaValorFinal(LocalDateTime.now());
+        reservaRepository.save(reserva);
         return reserva;
     }
 
