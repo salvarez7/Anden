@@ -87,6 +87,24 @@ public class ReservaService {
             errores.add("Los trayectos no pueden pasar de " + MAXIMO_CARACTERES_TRAYECTOS + " caracteres.");
         }
 
+        // Sprint 6 (H12)
+        String errorTrayectos = CalculadoraTarifa.validarNumeroTrayectos(datos.numeroTrayectos(), false);
+        if (errorTrayectos != null) {
+            errores.add(errorTrayectos);
+        }
+        String errorFuera = CalculadoraTarifa.validarTrayectosFuera(datos.trayectosFuera(), false);
+        if (errorFuera != null) {
+            errores.add(errorFuera);
+        }
+        String errorHoras = CalculadoraTarifa.validarHorasPorDia(datos.horasPorDia(), false);
+        if (errorHoras != null) {
+            errores.add(errorHoras);
+        }
+        String errorHoraInicio = CalculadoraTarifa.validarHoraInicio(datos.horaInicio(), false);
+        if (errorHoraInicio != null) {
+            errores.add(errorHoraInicio);
+        }
+
         return errores;
     }
 
@@ -108,6 +126,16 @@ public class ReservaService {
                 datos.fechaFin(),
                 datos.pasajeros(),
                 datos.trayectos().trim());
+        // Sprint 6 (H12): se guarda el estimado para compararlo con el valor final (H13) y la factura (H14)
+        int numeroTrayectos = datos.numeroTrayectos() == null ? 0 : datos.numeroTrayectos();
+        int trayectosFuera = datos.trayectosFuera() == null ? 0 : datos.trayectosFuera();
+        reserva.setNumeroTrayectos(numeroTrayectos);
+        reserva.setTrayectosFuera(trayectosFuera);
+        reserva.setHorasPorDia(datos.horasPorDia());
+        reserva.setHoraInicio(datos.horaInicio());
+        CalculadoraTarifa.calcular(vehiculo.getGama(), datos.fechaInicio(), datos.fechaFin(),
+                        datos.horasPorDia(), datos.pasajeros(), numeroTrayectos, trayectosFuera, datos.horaInicio())
+                .ifPresent(tarifa -> reserva.setValorEstimado(tarifa.total()));
         reservaRepository.save(reserva);
 
         

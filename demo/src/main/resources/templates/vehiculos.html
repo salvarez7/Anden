@@ -116,6 +116,10 @@
         <dt>Pasajeros</dt><dd th:text="${r.vehiculo.numeroAsientos} + ' puestos'">4 puestos</dd>
         <dt>Conductor</dt><dd th:text="${r.conductor.nombre}">Nombre</dd>
         <dt>Placa</dt><dd th:text="${r.conductor.placaVehiculo}">ABC123</dd>
+        <!-- Sprint 6: tarifa de referencia de la gama -->
+        <th:block th:if="${r.tarifaHora() != null}">
+          <dt>Tarifa de referencia</dt><dd th:text="${r.tarifaHora()} + ' por hora + recorrido'">$12.000 por hora + recorrido</dd>
+        </th:block>
         <!-- Sprint 4: preferencias que el conductor edita en su perfil (solo si las llenó) -->
         <th:block th:if="${r.conductor.añosExperiencia != null}">
           <dt>Experiencia</dt><dd th:text="${r.conductor.añosExperiencia} + ' años'">5 años</dd>

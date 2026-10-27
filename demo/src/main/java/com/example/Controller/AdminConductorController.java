@@ -32,7 +32,7 @@ public class AdminConductorController {
         this.vehiculoRepository = vehiculoRepository;
     }
 
-    // Lista de conductores; por defecto muestra los pendientes. "TODOS" muestra a todos
+    // Lista de conductores; por defecto muestra los pendientes
     @GetMapping("/admin/conductores")
     public String lista(@RequestParam(defaultValue = "PENDIENTE_VERIFICACION") String estado, Model model) {
         String filtro = "TODOS".equalsIgnoreCase(estado) ? null : estado;

@@ -9,7 +9,7 @@
     .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:520px;box-sizing:border-box}
     h1{margin-top:0;font-size:1.4rem;color:#132D46}
     label{display:block;margin:14px 0 4px;font-size:.9rem}
-    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
     textarea{resize:vertical}
     button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
     dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0 0 8px}
@@ -22,6 +22,14 @@
     .ok{background:#e6f4ea;color:#1e6b34}
     .ayuda{font-size:.8rem;color:#132D46;opacity:.75;margin-top:4px}
     .boton{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#ffffff;color:#132D46;text-align:center;font-weight:600;text-decoration:none}
+    .tarifa{background:#ffffff;border-radius:8px;padding:16px;margin-top:16px;color:#132D46}
+    .tarifa-titulo{font-size:.85rem;font-weight:600}
+    .tarifa-total{font-size:1.6rem;font-weight:800;margin:2px 0}
+    .tarifa-rango{font-size:.85rem;opacity:.8}
+    .desglose{display:grid;grid-template-columns:1fr auto;gap:4px 12px;background:#f4f1ec;margin:12px 0 0;padding:10px 12px}
+    .desglose dt{margin:0;font-weight:400;font-size:.85rem}
+    .desglose dd{margin:0;text-align:right;font-size:.85rem}
+    .aviso{font-size:.8rem;margin:10px 0 0;opacity:.85}
     p.link{text-align:center;font-size:.9rem}
     a{color:#132D46}
   </style>
@@ -93,6 +101,26 @@
     <textarea th:field="*{trayectos}" rows="3" maxlength="300" placeholder="Ej. Aeropuerto → El Poblado; Medellín → Guatapé" required></textarea>
     <div class="ayuda">Máximo 300 caracteres.</div>
 
+    <label for="numeroTrayectos">¿Cuántos trayectos dentro de Medellín?</label>
+    <input type="number" th:field="*{numeroTrayectos}" min="0" max="50" placeholder="Ej. 6" required>
+    <div class="ayuda">Cada ida de un lugar a otro cuenta como un trayecto (ej. hotel → Comuna 13).</div>
+
+    <label for="trayectosFuera">¿Cuántos viajes fuera de Medellín?</label>
+    <input type="number" th:field="*{trayectosFuera}" min="0" max="20" placeholder="Ej. 1" required>
+    <div class="ayuda">Cada ida a otro municipio (Guatapé, Santa Fe de Antioquia, Jardín…). Pon 0 si no vas a salir de la ciudad.</div>
+
+    <label for="horasPorDia">¿Cuántas horas al día necesitas el carro?</label>
+    <input type="number" th:field="*{horasPorDia}" min="1" max="12" placeholder="Ej. 6" required>
+    <div class="ayuda">Contando el tiempo que el conductor te espera. Máximo 12 horas.</div>
+
+    <label for="horaInicio">¿A qué hora empieza el servicio cada día?</label>
+    <select th:field="*{horaInicio}" required>
+      <option value="">Elige la hora</option>
+      <option th:each="h : ${#numbers.sequence(0, 23)}" th:value="${h}"
+              th:text="${T(com.example.Service.CalculadoraTarifa).etiquetaHora(h)}">8:00 a. m.</option>
+    </select>
+    <div class="ayuda">En hora pico (6 a 9 a. m. y 5 a 8 p. m.) se suma un 20 % y de noche (8 p. m. a 6 a. m.) un 30 %.</div>
+
     <button type="submit">Verificar fechas</button>
   </form>
 
@@ -102,6 +130,34 @@
     <input type="hidden" name="fechaFin" th:value="${formulario.fechaFin}">
     <input type="hidden" name="pasajeros" th:value="${formulario.pasajeros}">
     <input type="hidden" name="trayectos" th:value="${formulario.trayectos}">
+    <input type="hidden" name="numeroTrayectos" th:value="${formulario.numeroTrayectos}">
+    <input type="hidden" name="horasPorDia" th:value="${formulario.horasPorDia}">
+    <input type="hidden" name="trayectosFuera" th:value="${formulario.trayectosFuera}">
+    <input type="hidden" name="horaInicio" th:value="${formulario.horaInicio}">
+
+    <!-- Sprint 6 (Sofía, H12): valor estimado antes de confirmar -->
+    <div class="tarifa" th:if="${tarifa != null}">
+      <div class="tarifa-titulo">Valor estimado del servicio</div>
+      <div class="tarifa-total" th:text="${T(com.example.Service.TarifaEstimada).pesos(tarifa.total)}">$1.000.000</div>
+      <div class="tarifa-rango" th:text="'Entre ' + ${T(com.example.Service.TarifaEstimada).pesos(tarifa.minimo)} + ' y ' + ${T(com.example.Service.TarifaEstimada).pesos(tarifa.maximo)}">Entre $850.000 y $1.150.000</div>
+      <dl class="desglose">
+        <dt th:text="'Conductor: ' + ${tarifa.horas} + ' h (' + ${tarifa.dias} + (${tarifa.dias == 1} ? ' día' : ' días') + ' × ' + ${tarifa.horasPorDia} + ' h) × ' + ${T(com.example.Service.TarifaEstimada).pesos(tarifa.gama.tarifaHora)}">Conductor: 24 h</dt>
+        <dd th:text="${T(com.example.Service.TarifaEstimada).pesos(tarifa.porHoras)}">$432.000</dd>
+        <dt th:text="'Recorrido: ' + ${tarifa.kilometros} + ' km aprox. × ' + ${T(com.example.Service.TarifaEstimada).pesos(tarifa.gama.tarifaKm)}">Recorrido: 152 km</dt>
+        <dd th:text="${T(com.example.Service.TarifaEstimada).pesos(tarifa.porKilometros)}">$76.800</dd>
+        <th:block th:if="${tarifa.recargoPasajeros > 0}">
+          <dt>Recargo desde el 5.º pasajero</dt>
+          <dd th:text="${T(com.example.Service.TarifaEstimada).pesos(tarifa.recargoPasajeros)}">$15.000</dd>
+        </th:block>
+        <th:block th:if="${tarifa.recargoHorario > 0}">
+          <dt th:text="'Recargo hora pico y noche (' + ${tarifa.horasPico} + ' h pico, ' + ${tarifa.horasNoche} + ' h noche al día)'">Recargo hora pico y noche</dt>
+          <dd th:text="${T(com.example.Service.TarifaEstimada).pesos(tarifa.recargoHorario)}">$33.900</dd>
+        </th:block>
+      </dl>
+      <p class="aviso" th:text="'Kilómetros: ' + ${tarifa.trayectos} + ' trayectos en Medellín × 12 km + ' + ${tarifa.trayectosFuera} + ' viajes fuera × 80 km.'">Kilómetros</p>
+      <p class="aviso" th:text="${avisoTarifa}">Este valor es solo una estimación.</p>
+    </div>
+
     <button type="submit">Confirmar reserva</button>
   </form>
 
