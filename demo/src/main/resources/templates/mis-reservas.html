@@ -70,6 +70,18 @@
         <dd th:text="${#temporals.format(r.reserva.fechaInicio, 'dd/MM/yyyy')} + ' al ' + ${#temporals.format(r.reserva.fechaFin, 'dd/MM/yyyy')}">01/11/2026 al 04/11/2026</dd>
         <dt>Pasajeros</dt><dd th:text="${r.reserva.pasajeros}">3</dd>
         <dt>Trayectos</dt><dd th:text="${r.reserva.trayectos}">Aeropuerto a hotel</dd>
+        <dt th:if="${r.reserva.valorEstimado != null}">Valor estimado</dt>
+        <dd th:if="${r.reserva.valorEstimado != null}"
+            th:text="'$' + ${#numbers.formatInteger(r.reserva.valorEstimado, 1, 'POINT')}">$300.000</dd>
+        <dt>Valor final</dt>
+        <dd th:if="${r.reserva.valorFinal != null}"
+            th:text="'$' + ${#numbers.formatInteger(r.reserva.valorFinal, 1, 'POINT')}">$340.000</dd>
+        <dd th:if="${r.reserva.valorFinal == null}">Se define al terminar el servicio</dd>
+        <dd th:if="${r.reserva.diferenciaConEstimado != null and r.reserva.diferenciaConEstimado > 0}"
+            th:text="'Subió $' + ${#numbers.formatInteger(r.reserva.diferenciaConEstimado, 1, 'POINT')} + ' frente al estimado'">Subió $40.000 frente al estimado</dd>
+        <dd th:if="${r.reserva.diferenciaConEstimado != null and r.reserva.diferenciaConEstimado < 0}"
+            th:text="'Bajó $' + ${#numbers.formatInteger(r.reserva.diferenciaConEstimado * -1, 1, 'POINT')} + ' frente al estimado'">Bajó $40.000 frente al estimado</dd>
+        <dd th:if="${r.reserva.diferenciaConEstimado != null and r.reserva.diferenciaConEstimado == 0}">Quedó igual al estimado</dd>
       </dl>
       <a class="whatsapp" th:if="${r.enlaceWhatsApp != null}" th:href="${r.enlaceWhatsApp}"
          target="_blank" rel="noopener">Contactar por WhatsApp</a>

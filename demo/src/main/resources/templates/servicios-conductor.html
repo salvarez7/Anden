@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mis servicios</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f4f1ec;margin:0;padding:32px 16px;box-sizing:border-box;color:#1A1E29}
+    main{max-width:960px;margin:0 auto}
+    h1{margin-top:0;font-size:1.4rem;color:#132D46}
+    .lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+    .card{background:#01C38E;padding:24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+    .card h2{margin:0 0 4px;font-size:1.15rem;color:#132D46}
+    .codigo{display:inline-block;margin-bottom:12px;padding:2px 10px;border-radius:999px;background:#132D46;color:#ffffff;font-size:.8rem;font-family:'Space Mono',monospace}
+    dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0}
+    dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
+    dt:first-child{margin-top:0}
+    dd{margin:2px 0 0}
+    .whatsapp{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#132D46;color:#ffffff;text-align:center;font-weight:600;text-decoration:none}
+    .ticket{display:block;margin-top:8px;padding:10px;border-radius:8px;background:#ffffff;color:#132D46;text-align:center;font-weight:600;text-decoration:none}
+    .sin-numero{margin:12px 0 0;font-size:.85rem;color:#132D46}
+    .msg{padding:14px;border-radius:8px;background:#ffffff;color:#132D46;margin:0 0 16px}
+    a{color:#132D46}
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#132D46;--paper:#FFFFFF;--orange:#01C38E;--line-light:rgba(255,255,255,.28);}
+    body{box-sizing:border-box;padding-top:120px;}
+    .chrome{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--ink);color:var(--paper);padding:14px 24px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:'Work Sans',sans-serif;}
+    .chrome-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+    .chrome-brand{font-family:'Fraunces',serif;font-weight:800;font-size:20px;letter-spacing:.02em;}
+    .chrome-brand span{color:var(--orange);}
+    .chrome-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.55;font-family:'Space Mono',monospace;}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;}
+    .tab{background:transparent;border:1px solid var(--line-light);color:var(--paper);opacity:.7;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.15s;text-decoration:none;}
+    .tab:hover{opacity:1;border-color:var(--paper);}
+    .tab.active{background:var(--orange);border-color:var(--orange);opacity:1;color:var(--ink);font-weight:600;}
+    .dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--orange);}
+    .tab.active .dot{background:var(--ink);}
+    @media(max-width:640px){body{padding-top:170px;}}
+  </style>
+  <style>
+    .error{background:#ffffff;border-left:4px solid #b3261e;color:#7a1a14}
+    .error p{margin:0 0 4px}
+    label{display:block;margin-top:10px;font-size:.85rem;color:#ffffff;font-weight:600}
+    input[type=number]{width:100%;box-sizing:border-box;margin-top:4px;padding:9px;border:0;border-radius:8px;font-size:1rem}
+    button{margin-top:12px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-weight:600;font-size:1rem;cursor:pointer}
+    .nota{margin:12px 0 0;font-size:.85rem;color:#132D46}
+  </style>
+</head>
+<body>
+<div class="chrome">
+  <div class="chrome-top">
+    <div class="chrome-brand">Andén<span>.</span></div>
+    <div class="chrome-label">Prototipo · mockup visual estático</div>
+  </div>
+  <div class="tabs">
+    <a class="tab" href="/"><span class="dot"></span>Inicio</a>
+    <a class="tab" href="/conductor/perfil"><span class="dot"></span>Mi perfil</a>
+    <a class="tab active" href="/conductor/servicios"><span class="dot"></span>Mis servicios</a>
+    <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
+  </div>
+</div>
+<main>
+  <h1>Mis servicios</h1>
+  <div class="msg" th:if="${guardado != null}">
+    Registramos el valor final de la reserva <strong th:text="${guardado}">AND-1234</strong>.
+  </div>
+  <div class="msg error" th:if="${!#lists.isEmpty(errores)}">
+    <p th:each="e : ${errores}" th:text="${e}">Mensaje de error</p>
+  </div>
+  <p class="msg" th:if="${#lists.isEmpty(servicios)}">Todavía no tienes reservas en tu vehículo.</p>
+  <div class="lista">
+    <article class="card" th:each="s : ${servicios}">
+      <h2 th:text="${s.reserva.codigo}">AND-1234</h2>
+      <span class="codigo" th:text="${s.reserva.estado}">CONFIRMADA</span>
+      <dl>
+        <dt>Fechas</dt>
+        <dd th:text="${#temporals.format(s.reserva.fechaInicio, 'dd/MM/yyyy')} + ' al ' + ${#temporals.format(s.reserva.fechaFin, 'dd/MM/yyyy')}">01/11/2026 al 04/11/2026</dd>
+        <dt>Pasajeros</dt><dd th:text="${s.reserva.pasajeros}">3</dd>
+        <dt>Trayectos</dt><dd th:text="${s.reserva.trayectos}">Aeropuerto a hotel</dd>
+        <dt th:if="${s.reserva.valorEstimado != null}">Valor estimado</dt>
+        <dd th:if="${s.reserva.valorEstimado != null}"
+            th:text="'$' + ${#numbers.formatInteger(s.reserva.valorEstimado, 1, 'POINT')}">$300.000</dd>
+        <dt th:if="${s.reserva.valorFinal != null}">Valor final</dt>
+        <dd th:if="${s.reserva.valorFinal != null}"
+            th:text="'$' + ${#numbers.formatInteger(s.reserva.valorFinal, 1, 'POINT')} + ' (' + ${s.reserva.kilometrosReales} + ' km, ' + ${s.reserva.horasReales} + ' h)'">$340.000 (120 km, 24 h)</dd>
+      </dl>
+      <form th:if="${s.terminada and s.reserva.estado == 'CONFIRMADA'}"
+            th:action="@{/conductor/servicios/{codigo}/valor-final(codigo=${s.reserva.codigo})}" method="post">
+        <label>Kilómetros recorridos en total
+          <input type="number" name="kilometros" min="0" max="5000" required>
+        </label>
+        <label>Horas trabajadas en total
+          <input type="number" name="horas" min="1" required>
+        </label>
+        <button type="submit" th:text="${s.reserva.valorFinal == null} ? 'Registrar valor final' : 'Actualizar valor final'">Registrar valor final</button>
+      </form>
+      <p class="nota" th:unless="${s.terminada}"
+         th:text="'Podrás registrar el valor final desde el ' + ${#temporals.format(s.reserva.fechaFin, 'dd/MM/yyyy')} + '.'">Podrás registrar el valor final desde el 04/11/2026.</p>
+    </article>
+  </div>
+</main>
+</body>
+</html>

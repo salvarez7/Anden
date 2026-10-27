@@ -74,7 +74,7 @@ public class ReservaController {
         LocalDate inicio = formulario.getFechaInicio();
         LocalDate fin = formulario.getFechaFin();
 
-        // 1) Fechas
+     
         if (inicio == null || fin == null) {
             errores.add("Elige la fecha de inicio y la de fin.");
         } else if (inicio.isBefore(LocalDate.now())) {
@@ -106,7 +106,7 @@ public class ReservaController {
             errores.add("Los trayectos no pueden pasar de " + MAXIMO_CARACTERES_TRAYECTOS + " caracteres.");
         }
 
-        // Sprint 6 (H12): trayectos, horas al día y hora de inicio, para calcular la tarifa
+       
         String errorTrayectos = CalculadoraTarifa.validarNumeroTrayectos(formulario.getNumeroTrayectos(), true);
         if (errorTrayectos != null) {
             errores.add(errorTrayectos);
@@ -124,7 +124,7 @@ public class ReservaController {
             errores.add(errorHoraInicio);
         }
 
-        // Solo si todo está bien se arma el enlace de WhatsApp
+       
         boolean fechasValidas = errores.isEmpty();
         String nombreTurista = usuarioRepository.findByCorreo(principal.getName())
                 .map(u -> u.getNombre()).orElse(null);
