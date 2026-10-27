@@ -372,10 +372,18 @@ footer{background:var(--ink);color:var(--paper);padding:26px 24px;text-align:cen
       <div class="dash-side">
         <div class="dash-avatar" th:text="${inicial}">A</div>
         <div style="font-weight:700;font-size:16px;" th:text="${nombre}">Nombre</div>
-        <div style="font-size:12.5px;opacity:.6;margin-bottom:16px;" th:text="${rol == 'CONDUCTOR'} ? 'Conductor' : 'Turista'">Turista</div>
+        <div style="font-size:12.5px;opacity:.6;margin-bottom:16px;" th:text="${rol == 'CONDUCTOR'} ? 'Conductor' : (${rol == 'ADMIN'} ? 'Administrador' : 'Turista')">Turista</div>
       </div>
 
       <div>
+
+        <!-- ADMINISTRADOR -->
+        <div class="dash-card" th:if="${rol == 'ADMIN'}">
+          <h4>Revisión de conductores</h4>
+          <p style="margin:0 0 12px;">Revisa los datos y documentos de los conductores y decide si los apruebas o los rechazas.</p>
+          <button class="btn-primary" data-href="/admin/conductores">Ver conductores</button>
+        </div>
+
         <!-- TURISTA -->
         <div class="dash-card" th:if="${rol == 'TURISTA'}">
           <h4>Mis datos</h4>
