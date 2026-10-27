@@ -28,6 +28,8 @@ public class AuthController {
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
 
+
+
         String rol = "";
         if (autenticado) {
             String correo = authentication.getName();
@@ -36,6 +38,8 @@ public class AuthController {
                 rol = "TURISTA";
             } else if (tieneRol(authentication, "ROLE_CONDUCTOR")) {
                 rol = "CONDUCTOR";
+            } else if (tieneRol(authentication, "ROLE_ADMIN")) {
+                rol = "ADMIN";
             }
 
             Usuario usuario = usuarioRepository.findByCorreo(correo).orElse(null);

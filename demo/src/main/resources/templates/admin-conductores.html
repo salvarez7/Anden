@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conductores por revisar</title>
+    <style>
+        body{font-family:system-ui,sans-serif;background:#f4f1ec;margin:0;padding:32px 16px;color:#1A1E29}
+        main{max-width:960px;margin:0 auto}
+        h1{margin-top:0;font-size:1.4rem;color:#132D46}
+        .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+        .filtros a{padding:8px 14px;border-radius:999px;background:#ffffff;color:#132D46;text-decoration:none;font-weight:600;font-size:.9rem}
+        .filtros a.activo{background:#132D46;color:#ffffff}
+        .tabla{background:#ffffff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);overflow-x:auto}
+        table{width:100%;border-collapse:collapse}
+        th,td{text-align:left;padding:12px 16px;border-bottom:1px solid #ece8e1;font-size:.92rem}
+        th{font-size:.8rem;color:#132D46;text-transform:uppercase;letter-spacing:.04em}
+        tr:last-child td{border-bottom:0}
+        .estado{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600}
+        .pendiente{background:#fff4d6;color:#7a5200}
+        .aprobado{background:#e6f4ea;color:#1e6b34}
+        .rechazado{background:#fde8e8;color:#9b1c1c}
+        .revisar{color:#132D46;font-weight:700}
+        .msg{padding:14px;border-radius:8px;background:#ffffff;color:#132D46}
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ink:#132D46;--paper:#FFFFFF;--orange:#01C38E;--line-light:rgba(255,255,255,.28);}
+        body{box-sizing:border-box;padding-top:120px;}
+        .chrome{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--ink);color:var(--paper);padding:14px 24px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:'Work Sans',sans-serif;}
+        .chrome-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+        .chrome-brand{font-family:'Fraunces',serif;font-weight:800;font-size:20px;letter-spacing:.02em;}
+        .chrome-brand span{color:var(--orange);}
+        .chrome-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.55;font-family:'Space Mono',monospace;}
+        .tabs{display:flex;gap:6px;flex-wrap:wrap;}
+        .tab{background:transparent;border:1px solid var(--line-light);color:var(--paper);opacity:.7;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.15s;text-decoration:none;}
+        .tab:hover{opacity:1;border-color:var(--paper);}
+        .tab.active{background:var(--orange);border-color:var(--orange);opacity:1;color:var(--ink);font-weight:600;}
+        .dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--orange);}
+        .tab.active .dot{background:var(--ink);}
+        @media(max-width:640px){body{padding-top:170px;}}
+    </style>
+</head>
+<body>
+<div class="chrome">
+    <div class="chrome-top">
+        <div class="chrome-brand">Andén<span>.</span></div>
+        <div class="chrome-label">Prototipo · mockup visual estático</div>
+    </div>
+    <div class="tabs">
+        <a class="tab" href="/"><span class="dot"></span>Inicio</a>
+        <a class="tab" href="/vehiculos"><span class="dot"></span>Buscar</a>
+        <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
+    </div>
+</div>
+<main>
+    <h1>Revisión de conductores</h1>
+
+    <div class="filtros">
+        <a th:href="@{/admin/conductores(estado='PENDIENTE_VERIFICACION')}" th:classappend="${estadoElegido == 'PENDIENTE_VERIFICACION'} ? 'activo'">Pendientes</a>
+        <a th:href="@{/admin/conductores(estado='APROBADO')}" th:classappend="${estadoElegido == 'APROBADO'} ? 'activo'">Aprobados</a>
+        <a th:href="@{/admin/conductores(estado='RECHAZADO')}" th:classappend="${estadoElegido == 'RECHAZADO'} ? 'activo'">Rechazados</a>
+        <a th:href="@{/admin/conductores(estado='TODOS')}" th:classappend="${estadoElegido == 'TODOS'} ? 'activo'">Todos</a>
+    </div>
+
+    <p class="msg" th:if="${#lists.isEmpty(conductores)}">No hay conductores en esta lista.</p>
+
+    <div class="tabla" th:if="${!#lists.isEmpty(conductores)}">
+        <table>
+            <thead>
+            <tr><th>Nombre</th><th>Correo</th><th>Placa</th><th>Vehículo</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${conductores}">
+                <td th:text="${c.nombre}">Nombre</td>
+                <td th:text="${c.correo}">correo</td>
+                <td th:text="${c.placaVehiculo}">ABC123</td>
+                <td th:text="(${c.marcaVehiculo} ?: '') + ' ' + (${c.modeloVehiculo} ?: '')">Marca Modelo</td>
+                <td>
+            <span class="estado"
+                  th:classappend="${c.estado == 'APROBADO'} ? 'aprobado' : (${c.estado == 'RECHAZADO'} ? 'rechazado' : 'pendiente')"
+                  th:text="${c.estado == 'APROBADO'} ? 'Aprobado' : (${c.estado == 'RECHAZADO'} ? 'Rechazado' : 'Pendiente')">Pendiente</span>
+                </td>
+                <td><a class="revisar" th:href="@{/admin/conductores/{id}(id=${c.id})}">Revisar</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
