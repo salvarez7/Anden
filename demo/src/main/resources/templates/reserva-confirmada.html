@@ -8,20 +8,16 @@
     body{font-family:system-ui,sans-serif;background:#f4f1ec;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;margin:0;padding:32px 16px;box-sizing:border-box;color:#1A1E29}
     .card{background:#01C38E;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:520px;box-sizing:border-box}
     h1{margin-top:0;font-size:1.4rem;color:#132D46}
-    label{display:block;margin:14px 0 4px;font-size:.9rem}
-    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit;background:#ffffff}
-    textarea{resize:vertical}
-    button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
     dl{background:#ffffff;border-radius:8px;padding:12px 16px;margin:0 0 8px}
     dt{font-size:.8rem;color:#132D46;font-weight:600;margin-top:8px}
     dt:first-child{margin-top:0}
     dd{margin:2px 0 0}
     .msg{padding:10px;border-radius:8px;margin:12px 0;font-size:.9rem}
     .error{background:#fde8e8;color:#9b1c1c}
-    .error ul{margin:0;padding-left:18px}
     .ok{background:#e6f4ea;color:#1e6b34}
     .ayuda{font-size:.8rem;color:#132D46;opacity:.75;margin-top:4px}
     .boton{display:block;margin-top:12px;padding:11px;border-radius:8px;background:#ffffff;color:#132D46;text-align:center;font-weight:600;text-decoration:none}
+    .boton.pagar{background:#132D46;color:#ffffff}
     p.link{text-align:center;font-size:.9rem}
     a{color:#132D46}
   </style>
@@ -59,6 +55,10 @@
 </div>
 <div class="card">
   <h1>Tu reserva está confirmada</h1>
+
+  <!-- Mensaje que llega después de pagar -->
+  <div class="msg ok" th:if="${mensajePago != null}" th:text="${mensajePago}">¡Pago exitoso!</div>
+
   <dl>
     <dt>Código de reserva</dt><dd th:text="${reserva.codigo}">AND-2847</dd>
     <dt th:if="${conductor != null}">Conductor</dt>
@@ -71,11 +71,17 @@
     <th:block th:if="${valorEstimado != null}">
       <dt>Valor estimado</dt><dd th:text="${valorEstimado}">$1.000.000</dd>
     </th:block>
+    <dt>Pago</dt>
+    <dd th:if="${reserva.estadoPago == 'PAGADA'}" th:text="'Pagado · Referencia ' + ${reserva.referenciaPago}">Pagado · Referencia PAG-XXXX</dd>
+    <dd th:unless="${reserva.estadoPago == 'PAGADA'}">Pendiente</dd>
   </dl>
   <p class="ayuda" th:if="${avisoTarifa != null}" th:text="${avisoTarifa}">Este valor es solo una estimación.</p>
   <div class="msg ok">
     Te enviaremos un recordatorio 3 días antes de iniciar tu viaje.
   </div>
+  <a class="boton pagar"
+     th:if="${reserva.estadoPago != 'PAGADA' and (reserva.valorEstimado != null or reserva.valorFinal != null)}"
+     th:href="@{/reservas/{codigo}/pago(codigo=${reserva.codigo})}">Pagar ahora</a>
   <a class="boton" th:if="${enlaceWhatsApp != null}" th:href="${enlaceWhatsApp}"
      target="_blank" rel="noopener">Contactar por WhatsApp</a>
   <p class="ayuda" th:if="${enlaceWhatsApp != null}">Se abre WhatsApp con el número de tu conductor y un mensaje con los datos de tu reserva. Puedes cambiarlo antes de enviarlo.</p>
