@@ -10,4 +10,10 @@ public record ResultadoBusqueda(Vehiculo vehiculo, Conductor conductor) {
         Gama gama = Gama.desde(vehiculo.getGama());
         return gama == null ? vehiculo.getGama() : gama.getEtiqueta();
     }
+
+    // Sprint 6: tarifa de referencia por hora ("$12.000"), o null si la gama no es conocida
+    public String tarifaHora() {
+        Gama gama = Gama.desde(vehiculo.getGama());
+        return gama == null ? null : TarifaEstimada.pesos(gama.getTarifaHora());
+    }
 }

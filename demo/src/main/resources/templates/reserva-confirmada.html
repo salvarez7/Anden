@@ -68,7 +68,11 @@
     <dt>Fechas</dt><dd th:text="${reserva.fechaInicio} + ' al ' + ${reserva.fechaFin}">14 al 19 ago</dd>
     <dt>Pasajeros</dt><dd th:text="${reserva.pasajeros}">2</dd>
     <dt>Trayectos</dt><dd th:text="${reserva.trayectos}">Aeropuerto → El Poblado</dd>
+    <th:block th:if="${valorEstimado != null}">
+      <dt>Valor estimado</dt><dd th:text="${valorEstimado}">$1.000.000</dd>
+    </th:block>
   </dl>
+  <p class="ayuda" th:if="${avisoTarifa != null}" th:text="${avisoTarifa}">Este valor es solo una estimación.</p>
   <div class="msg ok">
     Te enviaremos un recordatorio 3 días antes de iniciar tu viaje.
   </div>

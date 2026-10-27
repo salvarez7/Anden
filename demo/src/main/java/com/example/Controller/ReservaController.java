@@ -6,9 +6,11 @@ import com.example.Model.Vehiculo;
 import com.example.Repository.ConductorRepository;
 import com.example.Repository.UsuarioRepository;
 import com.example.Repository.VehiculoRepository;
+import com.example.Service.CalculadoraTarifa;
 import com.example.Service.ContactoConductorService;
 import com.example.Service.DatosReserva;
 import com.example.Service.ReservaService;
+import com.example.Service.TarifaEstimada;
 import com.example.Service.VehiculoService;
 import com.example.Service.WhatsAppEnlace;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -104,6 +106,24 @@ public class ReservaController {
             errores.add("Los trayectos no pueden pasar de " + MAXIMO_CARACTERES_TRAYECTOS + " caracteres.");
         }
 
+        // Sprint 6 (H12): trayectos, horas al día y hora de inicio, para calcular la tarifa
+        String errorTrayectos = CalculadoraTarifa.validarNumeroTrayectos(formulario.getNumeroTrayectos(), true);
+        if (errorTrayectos != null) {
+            errores.add(errorTrayectos);
+        }
+        String errorFuera = CalculadoraTarifa.validarTrayectosFuera(formulario.getTrayectosFuera(), true);
+        if (errorFuera != null) {
+            errores.add(errorFuera);
+        }
+        String errorHoras = CalculadoraTarifa.validarHorasPorDia(formulario.getHorasPorDia(), true);
+        if (errorHoras != null) {
+            errores.add(errorHoras);
+        }
+        String errorHoraInicio = CalculadoraTarifa.validarHoraInicio(formulario.getHoraInicio(), true);
+        if (errorHoraInicio != null) {
+            errores.add(errorHoraInicio);
+        }
+
         // Solo si todo está bien se arma el enlace de WhatsApp
         boolean fechasValidas = errores.isEmpty();
         String nombreTurista = usuarioRepository.findByCorreo(principal.getName())
@@ -117,7 +137,8 @@ public class ReservaController {
                             Principal principal, Model model) {
         DatosReserva datos = new DatosReserva(formulario.getVehiculoId(), principal.getName(),
                 formulario.getFechaInicio(), formulario.getFechaFin(),
-                formulario.getPasajeros(), formulario.getTrayectos());
+                formulario.getPasajeros(), formulario.getTrayectos(), formulario.getNumeroTrayectos(),
+                formulario.getTrayectosFuera(), formulario.getHorasPorDia(), formulario.getHoraInicio());
         try {
             Reserva reserva = reservaService.crearReserva(datos);
             return "redirect:/reservas/" + reserva.getCodigo();
@@ -145,6 +166,11 @@ public class ReservaController {
         model.addAttribute("conductor", conductor.orElse(null));
         // Sprint 5 (Sofía): enlace con el número del conductor y el mensaje de la reserva ya escrito
         model.addAttribute("enlaceWhatsApp", contactoConductorService.conContacto(reserva).enlaceWhatsApp());
+        // Sprint 6 (Sofía): el valor estimado que se guardó al reservar
+        if (reserva.getValorEstimado() != null) {
+            model.addAttribute("valorEstimado", TarifaEstimada.pesos(reserva.getValorEstimado()));
+            model.addAttribute("avisoTarifa", CalculadoraTarifa.AVISO);
+        }
         return "reserva-confirmada";
     }
 
@@ -166,7 +192,16 @@ public class ReservaController {
         model.addAttribute("errores", errores);
         model.addAttribute("fechasValidas", fechasValidas);
 
-    
+        // Sprint 6 (Sofía, H12): valor estimado antes de confirmar, solo si los datos están bien
+        if (fechasValidas) {
+            CalculadoraTarifa.calcular(vehiculo.get().getGama(), formulario.getFechaInicio(), formulario.getFechaFin(),
+                            formulario.getHorasPorDia(), formulario.getPasajeros(),
+                            formulario.getNumeroTrayectos(), formulario.getTrayectosFuera(), formulario.getHoraInicio())
+                    .ifPresent(tarifa -> {
+                        model.addAttribute("tarifa", tarifa);
+                        model.addAttribute("avisoTarifa", CalculadoraTarifa.AVISO);
+                    });
+        }
         return "reserva";
     }
 

@@ -24,6 +24,12 @@ public class Reserva {
     private LocalDate fechaFin;
     private int pasajeros;
     private String trayectos;
+    // Sprint 6 (Sofía, H12): trayectos (en Medellín y fuera), horas al día, hora de inicio y el valor estimado que vio el turista
+    private Integer numeroTrayectos;
+    private Integer horasPorDia;
+    private Integer trayectosFuera;
+    private Integer horaInicio;
+    private Long valorEstimado;
     private String estado;      
     private LocalDateTime fechaCreacion;
 
@@ -53,6 +59,11 @@ public class Reserva {
     public LocalDate getFechaFin() { return fechaFin; }
     public int getPasajeros() { return pasajeros; }
     public String getTrayectos() { return trayectos; }
+    public Integer getNumeroTrayectos() { return numeroTrayectos; }
+    public Integer getHorasPorDia() { return horasPorDia; }
+    public Integer getTrayectosFuera() { return trayectosFuera; }
+    public Integer getHoraInicio() { return horaInicio; }
+    public Long getValorEstimado() { return valorEstimado; }
     public String getEstado() { return estado; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
 
@@ -65,6 +76,11 @@ public class Reserva {
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
     public void setPasajeros(int pasajeros) { this.pasajeros = pasajeros; }
     public void setTrayectos(String trayectos) { this.trayectos = trayectos; }
+    public void setNumeroTrayectos(Integer numeroTrayectos) { this.numeroTrayectos = numeroTrayectos; }
+    public void setHorasPorDia(Integer horasPorDia) { this.horasPorDia = horasPorDia; }
+    public void setTrayectosFuera(Integer trayectosFuera) { this.trayectosFuera = trayectosFuera; }
+    public void setHoraInicio(Integer horaInicio) { this.horaInicio = horaInicio; }
+    public void setValorEstimado(Long valorEstimado) { this.valorEstimado = valorEstimado; }
     public void setEstado(String estado) { this.estado = estado; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }
