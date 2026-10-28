@@ -57,7 +57,7 @@
 <div class="card">
     <h1>Pagar tu reserva</h1>
 
-    <div class="msg aviso">Esto es una simulación: no se cobra dinero ni se piden datos de tu tarjeta.</div>
+    <div class="msg aviso">Esto es una simulación: no se cobra dinero de verdad ni se piden datos de tu tarjeta. Pagas el 10% de anticipo por transferencia; el resto lo acuerdas con tu conductor al terminar el servicio.</div>
 
     <div class="msg error" th:if="${errorPago != null}" th:text="${errorPago}">Error</div>
 
@@ -66,14 +66,20 @@
         <dt th:if="${modelo != null}">Vehículo</dt>
         <dd th:if="${modelo != null}" th:text="${modelo}">Renault Duster</dd>
         <dt>Fechas</dt><dd th:text="${reserva.fechaInicio} + ' al ' + ${reserva.fechaFin}">2026-11-01 al 2026-11-04</dd>
-        <dt>Valor a pagar</dt><dd class="monto" th:text="${monto}">$300.000</dd>
+        <dt>Valor estimado del servicio</dt><dd th:text="${total}">$300.000</dd>
+        <dt>Valor a pagar ahora (anticipo 10%)</dt><dd class="monto" th:text="${monto}">$30.000</dd>
     </dl>
 
     <form th:action="@{/reservas/{codigo}/pago(codigo=${reserva.codigo})}" method="post">
-        <h2>Método de pago</h2>
-        <label class="opcion"><input type="radio" name="metodo" value="TARJETA" checked> Tarjeta</label>
-        <label class="opcion"><input type="radio" name="metodo" value="PSE"> PSE</label>
-        <label class="opcion"><input type="radio" name="metodo" value="NEQUI"> Nequi</label>
+        <h2>Transferencia desde</h2>
+        <label class="opcion"><input type="radio" name="metodo" value="BBVA" checked> BBVA</label>
+        <label class="opcion"><input type="radio" name="metodo" value="BANCOLOMBIA"> Bancolombia</label>
+        <label class="opcion"><input type="radio" name="metodo" value="BANCO_BOGOTA"> Banco de Bogotá</label>
+        <label class="opcion"><input type="radio" name="metodo" value="PAYPAL"> PayPal</label>
+        <h2>Datos del pago</h2>
+        <label for="titular">Nombre del titular de la cuenta</label>
+        <input id="titular" type="text" name="titular" minlength="3" maxlength="60" required
+               placeholder="Como aparece en tu cuenta">
         <button type="submit">Pagar ahora</button>
     </form>
 
