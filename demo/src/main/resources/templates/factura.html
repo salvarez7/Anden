@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Factura</title>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f4f1ec;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;margin:0;padding:32px 16px;box-sizing:border-box;color:#1A1E29}
+    .factura{background:#ffffff;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);width:100%;max-width:560px;box-sizing:border-box;border-top:8px solid #01C38E}
+    .encabezado{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+    .marca{font-family:'Fraunces',serif;font-weight:800;font-size:1.6rem;color:#132D46}
+    .marca span{color:#01C38E}
+    .numero{text-align:right;font-size:.85rem}
+    .numero b{display:block;font-size:1.05rem;color:#132D46}
+    h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#132D46;margin:22px 0 6px;border-bottom:1px solid #e5e5e5;padding-bottom:4px}
+    table{width:100%;border-collapse:collapse;font-size:.92rem}
+    td{padding:4px 0;vertical-align:top}
+    td.dato{color:#555;width:42%}
+    td.valor{text-align:right;white-space:nowrap}
+    tr.total td{font-weight:700;font-size:1.1rem;color:#132D46;border-top:2px solid #132D46;padding-top:8px}
+    .aviso{font-size:.8rem;color:#555;background:#f4f1ec;border-radius:8px;padding:10px;margin-top:18px}
+    button{margin-top:20px;width:100%;padding:11px;border:0;border-radius:8px;background:#132D46;color:#ffffff;font-size:1rem;cursor:pointer}
+    p.link{text-align:center;font-size:.9rem}
+    a{color:#132D46}
+    @media print{.chrome,.no-imprimir{display:none !important}body{padding:0;background:#ffffff}.factura{box-shadow:none}}
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#132D46;--paper:#FFFFFF;--orange:#01C38E;--line-light:rgba(255,255,255,.28);}
+    body{box-sizing:border-box;padding-top:120px;}
+    .chrome{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--ink);color:var(--paper);padding:14px 24px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:'Work Sans',sans-serif;}
+    .chrome-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+    .chrome-brand{font-family:'Fraunces',serif;font-weight:800;font-size:20px;letter-spacing:.02em;}
+    .chrome-brand span{color:var(--orange);}
+    .chrome-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.55;font-family:'Space Mono',monospace;}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;}
+    .tab{background:transparent;border:1px solid var(--line-light);color:var(--paper);opacity:.7;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.15s;text-decoration:none;}
+    .tab:hover{opacity:1;border-color:var(--paper);}
+    .tab.active{background:var(--orange);border-color:var(--orange);opacity:1;color:var(--ink);font-weight:600;}
+    .dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--orange);}
+    .tab.active .dot{background:var(--ink);}
+    @media(max-width:640px){body{padding-top:170px;}}
+  </style>
+</head>
+<body>
+<div class="chrome">
+  <div class="chrome-top">
+    <div class="chrome-brand">Andén<span>.</span></div>
+    <div class="chrome-label">Prototipo · mockup visual estático</div>
+  </div>
+  <div class="tabs">
+    <a class="tab" href="/"><span class="dot"></span>Inicio</a>
+    <a class="tab" href="/vehiculos"><span class="dot"></span>Buscar</a>
+    <a class="tab" href="/reserva"><span class="dot"></span>Reserva</a>
+    <a class="tab" href="/#dashboard"><span class="dot"></span>Panel de control</a>
+  </div>
+</div>
+<div class="factura">
+  <div class="encabezado">
+    <div class="marca">Andén<span>.</span></div>
+    <div class="numero">
+      Factura simulada
+      <b th:text="${factura.numero}">FAC-AND-2847</b>
+      <span th:text="${#temporals.format(factura.fechaEmision, 'dd/MM/yyyy HH:mm')}">27/10/2026 10:30</span>
+    </div>
+  </div>
+
+  <h2>Cliente</h2>
+  <table>
+    <tr th:if="${turista != null}"><td class="dato">Nombre</td><td th:text="${turista.nombre}">Ana</td></tr>
+    <tr><td class="dato">Correo</td><td th:text="${factura.correoTurista}">ana@correo.com</td></tr>
+  </table>
+
+  <h2>Reserva</h2>
+  <table>
+    <tr><td class="dato">Código</td><td th:text="${reserva.codigo}">AND-2847</td></tr>
+    <tr th:if="${vehiculo != null}"><td class="dato">Vehículo</td><td th:text="${vehiculo.modelo}">Renault Duster</td></tr>
+    <tr th:if="${conductor != null}"><td class="dato">Conductor</td><td th:text="${conductor.nombre}">Juan Pérez</td></tr>
+    <tr><td class="dato">Fechas</td>
+      <td th:text="${#temporals.format(reserva.fechaInicio, 'dd/MM/yyyy')} + ' al ' + ${#temporals.format(reserva.fechaFin, 'dd/MM/yyyy')} + ' (' + ${dias} + (${dias == 1} ? ' día)' : ' días)')">06/11/2026 al 09/11/2026 (4 días)</td></tr>
+    <tr><td class="dato">Pasajeros</td><td th:text="${reserva.pasajeros}">3</td></tr>
+    <tr><td class="dato">Trayectos</td><td th:text="${reserva.trayectos}">Aeropuerto → El Poblado</td></tr>
+  </table>
+
+  <h2>Pago</h2>
+  <table>
+    <tr><td class="dato">Referencia</td><td th:text="${factura.referenciaPago}">PAG-3F9A21BC</td></tr>
+    <tr><td class="dato">Transferencia desde</td><td th:text="${factura.metodoPago}">Bancolombia</td></tr>
+    <tr><td class="dato">Titular de la cuenta</td><td th:text="${factura.titular}">Ana Gómez</td></tr>
+    <tr th:if="${factura.fechaPago != null}"><td class="dato">Fecha del pago</td>
+      <td th:text="${#temporals.format(factura.fechaPago, 'dd/MM/yyyy HH:mm')}">27/10/2026 10:30</td></tr>
+  </table>
+
+  <h2>Valores</h2>
+  <table>
+    <tr><td class="dato">Valor estimado del servicio</td>
+      <td class="valor" th:text="${T(com.example.Service.TarifaEstimada).pesos(factura.valorEstimado)}">$542.300</td></tr>
+    <tr th:if="${reserva.valorFinal != null}"><td class="dato">Valor final del servicio</td>
+      <td class="valor" th:text="${T(com.example.Service.TarifaEstimada).pesos(reserva.valorFinal)}">$560.000</td></tr>
+    <tr><td class="dato" th:text="${reserva.valorFinal != null} ? 'Saldo (se paga al conductor)' : 'Saldo estimado (se paga al conductor)'">Saldo estimado (se paga al conductor)</td>
+      <td class="valor" th:text="${T(com.example.Service.TarifaEstimada).pesos(saldo)}">$488.100</td></tr>
+    <tr class="total"><td th:text="'Total pagado: anticipo del ' + ${factura.porcentaje} + ' %'">Total pagado: anticipo del 10 %</td>
+      <td class="valor" th:text="${T(com.example.Service.TarifaEstimada).pesos(factura.valorPagado)}">$54.200</td></tr>
+  </table>
+
+  <p class="aviso" th:text="${aviso}">Factura simulada: Andén no procesa pagos reales.</p>
+
+  <div class="no-imprimir">
+    <button type="button" onclick="window.print()">Imprimir factura</button>
+    <p class="link"><a th:href="@{/reservas/{codigo}(codigo=${reserva.codigo})}">Volver a la reserva</a> · <a th:href="@{/reservas}">Ver mis reservas</a></p>
+  </div>
+</div>
+</body>
+</html>
