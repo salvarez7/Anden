@@ -85,6 +85,8 @@
         <dt>Pago</dt>
         <dd th:text="${r.reserva.estadoPago == 'PAGADA'} ? 'Pagado · ' + ${r.reserva.referenciaPago} : 'Pendiente'">Pendiente</dd>
       </dl>
+      <a class="whatsapp" th:if="${r.reserva.estadoPago == 'PAGADA'}"
+         th:href="@{/reservas/{codigo}/factura(codigo=${r.reserva.codigo})}">Ver factura</a>
       <a class="whatsapp" th:if="${r.enlaceWhatsApp != null}" th:href="${r.enlaceWhatsApp}"
          target="_blank" rel="noopener">Contactar por WhatsApp</a>
       <p class="sin-numero" th:if="${r.enlaceWhatsApp == null}">Este conductor no tiene un número de WhatsApp válido.</p>
