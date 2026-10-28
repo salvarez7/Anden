@@ -51,30 +51,25 @@ public class PagoController {
         model.addAttribute("reserva", reserva);
         model.addAttribute("modelo", modelo);
         model.addAttribute("monto", TarifaEstimada.pesos(monto));
+        model.addAttribute("total", TarifaEstimada.pesos(PagoService.totalDe(reserva)));
         return "pago";
     }
 
     @PostMapping("/reservas/{codigo}/pago")
     public String pagar(@PathVariable String codigo, @RequestParam(required = false) String metodo,
+                        @RequestParam(required = false) String titular,
                         Principal principal, RedirectAttributes redirect) {
         try {
-            Pago pago = pagoService.pagar(codigo, principal.getName(), metodo);
+            Pago pago = pagoService.pagar(codigo, principal.getName(), metodo, titular);
             redirect.addFlashAttribute("mensajePago",
                     "¡Pago exitoso! Recibimos " + TarifaEstimada.pesos(pago.getMonto())
-                            + " con " + etiqueta(pago.getMetodo()) + ". Tu reserva " + codigo
-                            + " quedó pagada. Referencia: " + pago.getReferencia() + ".");
+                            + " como anticipo del 10% por transferencia desde " + PagoService.etiqueta(pago.getMetodo())
+                            + ". Tu reserva " + codigo + " quedó pagada. Referencia: " + pago.getReferencia()
+                            + ". Te enviamos el recibo a tu correo (simulado).");
             return "redirect:/reservas/" + codigo;
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("errorPago", e.getMessage());
             return "redirect:/reservas/" + codigo + "/pago";
         }
-    }
-
-    private static String etiqueta(String metodo) {
-        return switch (metodo) {
-            case "PSE" -> "PSE";
-            case "NEQUI" -> "Nequi";
-            default -> "tarjeta";
-        };
     }
 }

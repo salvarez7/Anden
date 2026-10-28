@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -58,33 +59,52 @@ class PagoControllerTest {
     }
 
     @Test
-    void elFormularioDePagoMuestraLaReservaYElBotonDePagar() throws Exception {
+    void elFormularioMuestraElAnticipoYLosCuatroMetodos() throws Exception {
         mvc.perform(get("/reservas/AND-1234/pago").with(user("ana@correo.com").roles("TURISTA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("AND-1234")))
-                .andExpect(content().string(containsString("Pagar ahora")));
+                .andExpect(content().string(containsString("$300.000")))
+                .andExpect(content().string(containsString("$30.000")))
+                .andExpect(content().string(containsString("BBVA")))
+                .andExpect(content().string(containsString("Bancolombia")))
+                .andExpect(content().string(containsString("Banco de Bogotá")))
+                .andExpect(content().string(containsString("PayPal")))
+                .andExpect(content().string(containsString("Nombre del titular")))
+                .andExpect(content().string(containsString("Pagar ahora")))
+                .andExpect(content().string(not(containsString("Nequi"))));
     }
 
     @Test
     void pagarMarcaLaReservaPagadaYVuelveAlTicketConElMensaje() throws Exception {
         mvc.perform(post("/reservas/AND-1234/pago").with(csrf())
-                        .param("metodo", "TARJETA")
+                        .param("metodo", "BANCOLOMBIA")
+                        .param("titular", "Ana Gómez")
                         .with(user("ana@correo.com").roles("TURISTA")))
                 .andExpect(redirectedUrl("/reservas/AND-1234"))
-                .andExpect(flash().attributeExists("mensajePago"));
-
+                .andExpect(flash().attribute("mensajePago", containsString("$30.000")))
+                .andExpect(flash().attribute("mensajePago", containsString("Bancolombia")));
         assertThat(reserva.getEstadoPago()).isEqualTo("PAGADA");
         assertThat(reserva.getReferenciaPago()).startsWith("PAG-");
     }
 
     @Test
-    void unMetodoInvalidoVuelveAlFormularioConElError() throws Exception {
+    void sinTitularVuelveAlFormularioConElError() throws Exception {
         mvc.perform(post("/reservas/AND-1234/pago").with(csrf())
-                        .param("metodo", "BITCOIN")
+                        .param("metodo", "BBVA")
                         .with(user("ana@correo.com").roles("TURISTA")))
                 .andExpect(redirectedUrl("/reservas/AND-1234/pago"))
                 .andExpect(flash().attributeExists("errorPago"));
+        assertThat(reserva.getEstadoPago()).isEqualTo("PENDIENTE");
+    }
 
+    @Test
+    void unMetodoQueNoEstaEnLaListaSeRechaza() throws Exception {
+        mvc.perform(post("/reservas/AND-1234/pago").with(csrf())
+                        .param("metodo", "NEQUI")
+                        .param("titular", "Ana Gómez")
+                        .with(user("ana@correo.com").roles("TURISTA")))
+                .andExpect(redirectedUrl("/reservas/AND-1234/pago"))
+                .andExpect(flash().attributeExists("errorPago"));
         assertThat(reserva.getEstadoPago()).isEqualTo("PENDIENTE");
     }
 

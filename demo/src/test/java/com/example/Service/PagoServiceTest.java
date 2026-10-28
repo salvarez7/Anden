@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+// Sprint 7 (H15): pago simulado del anticipo (10% del estimado) por transferencia
 class PagoServiceTest {
 
     private final ReservaRepository reservaRepository = mock(ReservaRepository.class);
@@ -33,15 +35,22 @@ class PagoServiceTest {
         return r;
     }
 
+    private String error(String correo, String metodo, String titular) {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> servicio.pagar("AND-1234", correo, metodo, titular));
+        return e.getMessage();
+    }
+
     @Test
     void pagarGuardaElPagoRelacionadoConLaReservaYLaMarcaPagada() {
         Reserva r = reserva(300000L);
 
-        Pago pago = servicio.pagar("AND-1234", "ana@x.com", "tarjeta");
+        Pago pago = servicio.pagar("AND-1234", "ana@x.com", "bbva", "Ana Gómez");
 
         assertEquals("AND-1234", pago.getReservaCodigo());
-        assertEquals(300000L, pago.getMonto());
-        assertEquals("TARJETA", pago.getMetodo());
+        assertEquals(30000L, pago.getMonto());
+        assertEquals("BBVA", pago.getMetodo());
+        assertEquals("Ana Gómez", pago.getTitular());
         assertEquals(Pago.EXITOSO, pago.getEstado());
         assertTrue(pago.getReferencia().startsWith("PAG-"));
         assertEquals(Reserva.PAGADA, r.getEstadoPago());
@@ -51,55 +60,120 @@ class PagoServiceTest {
     }
 
     @Test
-    void siElConductorYaRegistroElValorFinalSePagaElFinal() {
+    void elAnticipoEsElDiezPorCientoDelEstimadoRedondeadoALaCentena() {
+        assertEquals(30000L, PagoService.montoDe(reserva(300000L)));
+        assertEquals(34600L, PagoService.montoDe(reserva(345678L)));
+        assertEquals(1000L, PagoService.montoDe(reserva(10000L)));
+    }
+
+    @Test
+    void aunqueExistaValorFinalElAnticipoSigueSiendoElDiezPorCientoDelEstimado() {
         Reserva r = reserva(300000L);
         r.setValorFinal(340000L);
 
-        Pago pago = servicio.pagar("AND-1234", "ana@x.com", "PSE");
+        assertEquals(30000L, PagoService.montoDe(r));
+        assertEquals(340000L, PagoService.totalDe(r));
+    }
 
-        assertEquals(340000L, pago.getMonto());
+    @Test
+    void sinEstimadoSeUsaElValorFinal() {
+        Reserva r = reserva(null);
+        r.setValorFinal(200000L);
+        assertEquals(20000L, PagoService.montoDe(r));
+    }
+
+    @Test
+    void cadaMetodoDeLaListaSeAcepta() {
+        for (String metodo : PagoService.METODOS) {
+            reserva(300000L);
+            Pago pago = servicio.pagar("AND-1234", "ana@x.com", metodo, "Ana Gómez");
+            assertEquals(metodo, pago.getMetodo());
+        }
+        assertEquals(4, PagoService.METODOS.size());
+    }
+
+    @Test
+    void losMetodosViejosYaNoSeAceptan() {
+        reserva(300000L);
+        assertTrue(error("ana@x.com", "TARJETA", "Ana Gómez").contains("banco o PayPal"));
+        assertTrue(error("ana@x.com", "NEQUI", "Ana Gómez").contains("banco o PayPal"));
+        assertTrue(error("ana@x.com", null, "Ana Gómez").contains("banco o PayPal"));
+        verify(pagoRepository, never()).save(any(Pago.class));
+    }
+
+    @Test
+    void sinTitularNoSePaga() {
+        reserva(300000L);
+        assertTrue(error("ana@x.com", "BBVA", null).contains("titular"));
+        assertTrue(error("ana@x.com", "BBVA", "   ").contains("titular"));
+        assertTrue(error("ana@x.com", "BBVA", "Al").contains("titular"));
+        assertTrue(error("ana@x.com", "BBVA", "a".repeat(61)).contains("titular"));
+        verify(pagoRepository, never()).save(any(Pago.class));
+    }
+
+    @Test
+    void elTitularSeGuardaSinEspaciosSobrantes() {
+        reserva(300000L);
+        Pago pago = servicio.pagar("AND-1234", "ana@x.com", "PAYPAL", "  Ana Gómez  ");
+        assertEquals("Ana Gómez", pago.getTitular());
     }
 
     @Test
     void unaReservaYaPagadaNoSePagaDeNuevo() {
         Reserva r = reserva(300000L);
         r.setEstadoPago(Reserva.PAGADA);
-
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("AND-1234", "ana@x.com", "PSE"));
-
+        assertTrue(error("ana@x.com", "BBVA", "Ana Gómez").contains("ya está pagada"));
         verify(pagoRepository, never()).save(any(Pago.class));
     }
 
     @Test
     void soloElDuenoDeLaReservaPuedePagar() {
         reserva(300000L);
-
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("AND-1234", "otro@x.com", "PSE"));
-
+        assertTrue(error("otro@x.com", "BBVA", "Ana Gómez").contains("no es tuya"));
         verify(pagoRepository, never()).save(any(Pago.class));
+    }
+
+    @Test
+    void unaReservaCanceladaNoSePaga() {
+        Reserva r = reserva(300000L);
+        r.setEstado("CANCELADA");
+        assertTrue(error("ana@x.com", "BBVA", "Ana Gómez").contains("reservas confirmadas"));
     }
 
     @Test
     void unaReservaSinValorNoSePuedePagar() {
         reserva(null);
-
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("AND-1234", "ana@x.com", "PSE"));
-
+        assertNull(PagoService.montoDe(reserva(null)));
+        assertTrue(error("ana@x.com", "BBVA", "Ana Gómez").contains("no tiene un valor"));
         verify(pagoRepository, never()).save(any(Pago.class));
-    }
-
-    @Test
-    void unMetodoInvalidoSeRechaza() {
-        reserva(300000L);
-
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("AND-1234", "ana@x.com", "BITCOIN"));
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("AND-1234", "ana@x.com", null));
     }
 
     @Test
     void unaReservaQueNoExisteLanzaError() {
         when(reservaRepository.findByCodigo("nada")).thenReturn(Optional.empty());
+        assertThrows(IllegalArgumentException.class,
+                () -> servicio.pagar("nada", "ana@x.com", "BBVA", "Ana Gómez"));
+    }
 
-        assertThrows(IllegalArgumentException.class, () -> servicio.pagar("nada", "ana@x.com", "PSE"));
+    @Test
+    void lasEtiquetasSonLasQueVeElTurista() {
+        assertEquals("BBVA", PagoService.etiqueta("BBVA"));
+        assertEquals("Bancolombia", PagoService.etiqueta("BANCOLOMBIA"));
+        assertEquals("Banco de Bogotá", PagoService.etiqueta("BANCO_BOGOTA"));
+        assertEquals("PayPal", PagoService.etiqueta("PAYPAL"));
+    }
+
+    @Test
+    void elReciboLlevaLosDatosDelPago() {
+        Reserva r = reserva(300000L);
+        Pago pago = servicio.pagar("AND-1234", "ana@x.com", "BANCO_BOGOTA", "Ana Gómez");
+
+        String recibo = PagoService.textoRecibo(pago, r);
+
+        assertTrue(recibo.contains(pago.getReferencia()));
+        assertTrue(recibo.contains("$30.000"));
+        assertTrue(recibo.contains("Ana Gómez"));
+        assertTrue(recibo.contains("Banco de Bogotá"));
+        assertTrue(recibo.contains("AND-1234"));
     }
 }

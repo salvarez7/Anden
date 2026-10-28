@@ -18,6 +18,7 @@ public class Pago {
     private String reservaCodigo;   // relaciona el pago con la reserva (Reserva.codigo)
     private String correoTurista;
     private long monto;
+    private String titular;       // nombre del titular de la cuenta (dato simulado)
     private String metodo;          // TARJETA, PSE o NEQUI
     private String estado;
     private LocalDateTime fecha;
@@ -41,6 +42,7 @@ public class Pago {
     public String getCorreoTurista() { return correoTurista; }
     public long getMonto() { return monto; }
     public String getMetodo() { return metodo; }
+    public String getTitular() { return titular; }
     public String getEstado() { return estado; }
     public LocalDateTime getFecha() { return fecha; }
 
@@ -50,6 +52,7 @@ public class Pago {
     public void setCorreoTurista(String correoTurista) { this.correoTurista = correoTurista; }
     public void setMonto(long monto) { this.monto = monto; }
     public void setMetodo(String metodo) { this.metodo = metodo; }
+    public void setTitular(String titular) { this.titular = titular; }
     public void setEstado(String estado) { this.estado = estado; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
 }
