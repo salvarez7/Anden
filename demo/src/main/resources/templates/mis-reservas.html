@@ -82,6 +82,8 @@
         <dd th:if="${r.reserva.diferenciaConEstimado != null and r.reserva.diferenciaConEstimado < 0}"
             th:text="'Bajó $' + ${#numbers.formatInteger(r.reserva.diferenciaConEstimado * -1, 1, 'POINT')} + ' frente al estimado'">Bajó $40.000 frente al estimado</dd>
         <dd th:if="${r.reserva.diferenciaConEstimado != null and r.reserva.diferenciaConEstimado == 0}">Quedó igual al estimado</dd>
+        <dt>Pago</dt>
+        <dd th:text="${r.reserva.estadoPago == 'PAGADA'} ? 'Pagado · ' + ${r.reserva.referenciaPago} : 'Pendiente'">Pendiente</dd>
       </dl>
       <a class="whatsapp" th:if="${r.enlaceWhatsApp != null}" th:href="${r.enlaceWhatsApp}"
          target="_blank" rel="noopener">Contactar por WhatsApp</a>

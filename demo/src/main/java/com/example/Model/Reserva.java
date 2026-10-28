@@ -12,6 +12,8 @@ public class Reserva {
 
     
     public static final String CONFIRMADA = "CONFIRMADA";
+    public static final String PAGO_PENDIENTE = "PENDIENTE";
+    public static final String PAGADA = "PAGADA";
 
     @Id
     private String id;
@@ -38,6 +40,9 @@ public class Reserva {
     private LocalDateTime fechaValorFinal;
     private String estado;      
     private LocalDateTime fechaCreacion;
+
+    private String estadoPago;
+    private String referenciaPago;
 
     public Reserva() {
     }
@@ -105,4 +110,9 @@ public class Reserva {
     public void setFechaValorFinal(LocalDateTime fechaValorFinal) { this.fechaValorFinal = fechaValorFinal; }
     public void setEstado(String estado) { this.estado = estado; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+    // Las reservas anteriores al pago no tienen este campo: se leen como pendientes
+    public String getEstadoPago() { return estadoPago == null ? PAGO_PENDIENTE : estadoPago; }
+    public String getReferenciaPago() { return referenciaPago; }
+    public void setEstadoPago(String estadoPago) { this.estadoPago = estadoPago; }
+    public void setReferenciaPago(String referenciaPago) { this.referenciaPago = referenciaPago; }
 }
